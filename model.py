@@ -11,7 +11,7 @@ from keras.layers.pooling import MaxPooling2D
 
 #Get training data
 lines = []
-with open('./example-data/driving_log.csv') as csvfile:
+with open('./my-data/driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
@@ -23,7 +23,7 @@ for line in lines:
 	c_filename = line[0].split('/')[-1]
 	l_filename = line[1].split('/')[-1]
 	r_filename = line[2].split('/')[-1]
-	current_path = './example-data/IMG/'
+	current_path = './my-data/IMG/'
 	c_image = cv2.imread(current_path + c_filename)
 	#l_image = cv2.imread(current_path + l_filename)
 	#r_image = cv2.imread(current_path + r_filename)
@@ -47,9 +47,9 @@ y_train = np.array(measurements)
 model = Sequential()
 model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(160, 320, 3)))
 model.add(Cropping2D(cropping=((70, 25), (0, 0)))) #(65, 320, 3)
-model.add(Conv2D(24, (5, 5), subsample=(2, 2), activation="relu"))
-model.add(Conv2D(36, (5, 5), subsample=(2, 2), activation="relu"))
-model.add(Conv2D(48, (5, 5), subsample=(2, 2), activation="relu"))
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))
+model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))
 model.add(Conv2D(64, (3, 3), activation="relu"))
 model.add(Conv2D(64, (3, 3), activation="relu"))
 model.add(Flatten())
