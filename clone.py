@@ -11,7 +11,7 @@ from keras.layers.pooling import MaxPooling2D
 
 #Get training data
 lines = []
-with open('./my-data/driving_log.csv') as csvfile:
+with open('./example-data/driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
@@ -23,7 +23,7 @@ for line in lines:
 	c_filename = line[0].split('/')[-1]
 	l_filename = line[1].split('/')[-1]
 	r_filename = line[2].split('/')[-1]
-	current_path = './my-data/IMG/'
+	current_path = './example-data/IMG/'
 	c_image = cv2.imread(current_path + c_filename)
 	#l_image = cv2.imread(current_path + l_filename)
 	#r_image = cv2.imread(current_path + r_filename)
@@ -59,7 +59,7 @@ model.add(Dense(10))
 model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=3)
+model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
 
 model.save('model.h5')
 exit()
