@@ -9,17 +9,6 @@ from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 
-#Double set with flipped images
-def add_flipped_set(X, y):
-	#Check for a valid data set
-	assert(len(X) == len(y))
-
-	#Add flipped values
-	for i in range(len(X)):	
-		np.append(X, cv2.flip(X[i], 1))
-		np.append(y, (y[i] * -1.0))
-	return
-
 #Get training data
 lines = []
 with open('./example-data/driving_log.csv') as csvfile:
@@ -27,6 +16,7 @@ with open('./example-data/driving_log.csv') as csvfile:
 	for line in reader:
 		lines.append(line)
 
+#Load training data
 images = []
 measurements = []
 for line in lines:
@@ -40,12 +30,17 @@ for line in lines:
 	images.append(c_image)
 	measurement = float(line[3])
 	measurements.append(measurement)
+	#Add flipped data
+	c_image = cv2.flip(c_image, 1)
+	l_image = cv2.flip(r_image, 1)
+	r_image = cv2.flip(l_image, 1)
+	images.append(c_image)
+	measurement *= -1.
+	measurements.append(measurement)
 
-#Add flipped set
+#Create numpy arrays
 X_train = np.array(images)
 y_train = np.array(measurements)
-add_flipped_set(X_train, y_train)
-print(y_train[300], ',', y_train[len(lines) + 300])
 
 #Create Model
 model = Sequential()
