@@ -1,9 +1,13 @@
 #Imports
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2' #Block SSE instruction messages
 import csv
 import cv2
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda
+from keras.layers import Flatten, Dense, Lambda, Cropping2D
+from keras.layers.convolutional import Convolution2D
+from keras.layers.pooling import MaxPooling2D
 
 
 #Get training data
@@ -16,11 +20,14 @@ with open('./example-data/driving_log.csv') as csvfile:
 images = []
 measurements = []
 for line in lines:
-	source_path = line[0]
-	filename = source_path.split('/')[-1]
-	current_path = './example-data/IMG/' + filename
-	image = cv2.imread(current_path)
-	images.append(image)
+	c_filename = line[0].split('/')[-1]
+	l_filename = line[1].split('/')[-1]
+	r_filename = line[2].split('/')[-1]
+	current_path = './example-data/IMG/'
+	c_image = cv2.imread(current_path + c_filename)
+	l_image = cv2.imread(current_path + l_filename)
+	r_image = cv2.imread(current_path + r_filename)
+	images.append(c_image)
 	measurement = float(line[3])
 	measurements.append(measurement)
 
@@ -30,7 +37,14 @@ y_train = np.array(measurements)
 #Create Model
 model = Sequential()
 model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(160, 320, 3)))
+model.add(Cropping2D(cropping=((70, 25), (0, 0))))
+model.add(Convolution2D(6, 5, 5, activation="relu"))
+model.add(MaxPooling2D())
+model.add(Convolution2D(6, 5, 5, activation="relu"))
+model.add(MaxPooling2D())
 model.add(Flatten())
+model.add(Dense(120))
+model.add(Dense(84))
 model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
