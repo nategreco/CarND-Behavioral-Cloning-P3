@@ -25,15 +25,15 @@ for line in lines:
 	r_filename = line[2].split('/')[-1]
 	current_path = './example-data/IMG/'
 	c_image = cv2.imread(current_path + c_filename)
-	l_image = cv2.imread(current_path + l_filename)
-	r_image = cv2.imread(current_path + r_filename)
+	#l_image = cv2.imread(current_path + l_filename)
+	#r_image = cv2.imread(current_path + r_filename)
 	images.append(c_image)
 	measurement = float(line[3])
 	measurements.append(measurement)
 	#Add flipped data
 	c_image = cv2.flip(c_image, 1)
-	l_image = cv2.flip(r_image, 1)
-	r_image = cv2.flip(l_image, 1)
+	#l_image = cv2.flip(r_image, 1)
+	#r_image = cv2.flip(l_image, 1)
 	images.append(c_image)
 	measurement *= -1.
 	measurements.append(measurement)
