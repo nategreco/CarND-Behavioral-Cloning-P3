@@ -19,7 +19,7 @@ INPUT_ROWS = 160
 INPUT_CHANNELS = 3
 STEERING_CUTOFF = 0.5
 BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 7
 
 #Helper functions
 def prepare_image(image): # Get image to correct shape
@@ -89,7 +89,6 @@ train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 #Load training data
 def generator(lines, batch_size=32):
 	num_samples = len(lines)
-	print(num_samples)
 	while True:
 		sklearn.utils.shuffle(lines)
 		for offset in range(0, num_samples, batch_size):
