@@ -10,6 +10,7 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
+from keras.layers.core import Dropout, SpatialDropout2D
 
 #Get training data
 lines = []
