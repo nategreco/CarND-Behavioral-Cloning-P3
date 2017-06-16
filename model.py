@@ -12,9 +12,21 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
 
+#Define some constants
+DATA_PATH = './my-data/'
+STEERING_CUTOFF = 0.5
+BATCH_SIZE = 32
+EPOCHS = 5
+
+#Augment function
+def augment(image):
+	#Todo
+
+	return
+
 #Get training data
 lines = []
-with open('./my-data/driving_log.csv') as csvfile:
+with open(DATA_PATH + 'driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
@@ -36,10 +48,14 @@ def generator(lines, batch_size=32):
 				c_filename = line[0].split('/')[-1]
 				l_filename = line[1].split('/')[-1]
 				r_filename = line[2].split('/')[-1]
-				current_path = './my-data/IMG/'
+				current_path = DATA_PATH + 'IMG/'
 				c_image = cv2.imread(current_path + c_filename)
 				#l_image = cv2.imread(current_path + l_filename)
 				#r_image = cv2.imread(current_path + r_filename)
+				if abs(float()) > STEERING_CUTOFF:
+					augment(c_image)
+					#augment(l_image)
+					#augment(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
@@ -47,6 +63,10 @@ def generator(lines, batch_size=32):
 				c_image = cv2.flip(c_image, 1)
 				#l_image = cv2.flip(r_image, 1)
 				#r_image = cv2.flip(l_image, 1)
+				if abs(float()) > STEERING_CUTOFF:
+					augment(c_image)
+					#augment(l_image)
+					#augment(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
@@ -57,9 +77,8 @@ def generator(lines, batch_size=32):
 			yield sklearn.utils.shuffle(X_train, y_train) 
 
 #Compile and train the model using the generator function
-batch_size = 32
-train_generator = generator(train_samples, batch_size)
-validation_generator = generator(validation_samples, batch_size)
+train_generator = generator(train_samples, BATCH_SIZE)
+validation_generator = generator(validation_samples, BATCH_SIZE)
 
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
@@ -84,12 +103,12 @@ model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, \
-					steps_per_epoch=np.ceil(len(train_samples) / batch_size), \
-					epochs=5, \
+					steps_per_epoch=np.ceil(len(train_samples) / BATCH_SIZE), \
+					epochs=EPOCHS, \
 					verbose=1, \
 					callbacks=None, \
 					validation_data=validation_generator, \
-					validation_steps=np.ceil(len(validation_samples) / batch_size), \
+					validation_steps=np.ceil(len(validation_samples) / BATCH_SIZE), \
 					class_weight=None, \
 					max_q_size=10, \
 					workers=1, \
