@@ -84,7 +84,7 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, \
 					steps_per_epoch=np.ceil(len(train_samples) / batch_size), \
-					epochs=3, \
+					epochs=5, \
 					verbose=1, \
 					callbacks=None, \
 					validation_data=validation_generator, \
