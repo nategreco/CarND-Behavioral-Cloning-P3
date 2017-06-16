@@ -14,15 +14,68 @@ from keras.layers.core import Dropout, SpatialDropout2D
 
 #Define some constants
 DATA_PATH = './my-data/'
+INPUT_COLS = 320
+INPUT_ROWS = 160
+INPUT_CHANNELS = 3
 STEERING_CUTOFF = 0.5
 BATCH_SIZE = 32
 EPOCHS = 5
 
-#Augment function
-def augment(image):
-	#Todo
+#Helper functions
+def prepare_image(image): # Get image to correct shape
+	#Work with new copy
+	working_image = image.copy()
 
-	return
+	#Resize
+	if working_image.shape[1] > working_image.shape[0]:
+		working_image = cv2.resize(working_image, \
+								   (INPUT_COLS, \
+									int((working_image.shape[0] / working_image.shape[1]) * float(INPUT_ROWS))))
+	else:
+		working_image = cv2.resize(working_image, \
+								   (int((working_image.shape[1] / working_image.shape[0]) * float(INPUT_COLS)), \
+									INPUT_ROWS))
+		
+	#Pad to 32x32
+	working_image = cv2.copyMakeBorder(working_image, \
+									   0, \
+									   INPUT_ROWS - working_image.shape[0], \
+									   0, \
+									   INPUT_COLS - working_image.shape[1], \
+									   cv2.BORDER_CONSTANT, \
+									   value=0)
+	
+	return working_image
+
+def augment_image(image): #Augment images
+	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
+
+	#Scale
+	sf_x = 10. * np.random.rand() - 5. #Limit +/- 5%
+	sf_y = 10. * np.random.rand() - 5. #Limit +/- 5%
+	working_image = cv2.resize(image.copy(), \
+							   None, \
+							   fx=(sf_x / 100.) + 1., \
+							   fy=(sf_y / 100.) + 1., \
+							   interpolation = cv2.INTER_CUBIC)
+
+	#Rotate and Skew
+	center_x = int(working_image.shape[1] / 2.)
+	center_y = int(working_image.shape[0] / 2.)
+	angle = 18. * np.random.rand() - 9. #Limit +/- 9 degrees
+	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
+	working_image = cv2.warpAffine(working_image, matrix, working_image.shape[:2])
+
+	#Shift
+	shift_x = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
+	shift_y = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .05) #Limit +/- 5%
+	matrix = np.float32([[1,0,shift_x],[0,1,shift_y]])
+	working_image = cv2.warpAffine(working_image, matrix, working_image.shape[:2])
+	
+	#Get back to correct shape
+	working_image = prepare_image(working_image.copy())
+
+	return working_image
 
 #Get training data
 lines = []
@@ -53,9 +106,9 @@ def generator(lines, batch_size=32):
 				#l_image = cv2.imread(current_path + l_filename)
 				#r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
-					augment(c_image)
-					#augment(l_image)
-					#augment(r_image)
+					c_image = augment_image(c_image)
+					#l_image = augment_image(l_image)
+					#r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
@@ -64,9 +117,9 @@ def generator(lines, batch_size=32):
 				#l_image = cv2.flip(r_image, 1)
 				#r_image = cv2.flip(l_image, 1)
 				if abs(float()) > STEERING_CUTOFF:
-					augment(c_image)
-					#augment(l_image)
-					#augment(r_image)
+					c_image = augment_image(c_image)
+					#l_image = augment_image(l_image)
+					#r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
@@ -83,7 +136,7 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-model.add(Lambda(lambda x: x / 127.5 - 1., input_shape=(160, 320, 3)))
+model.add(Lambda(lambda x: x / 127.5 - 1., input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
 model.add(Cropping2D(cropping=((60, 20), (0, 0)))) #(80, 320, 3)
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
 model.add(SpatialDropout2D(0.1))
