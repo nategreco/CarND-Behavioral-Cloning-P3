@@ -11,9 +11,11 @@ from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
+from keras.callbacks import Callback
 
 #Define some constants
 DATA_PATH = './my-data/'
+LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
@@ -21,6 +23,12 @@ SIDE_IMAGE_OFFSET = 3.0
 STEERING_CUTOFF = 0.5
 BATCH_SIZE = 32
 EPOCHS = 8
+
+def print_training(history):
+	file = open(LOG_PATH, 'w')
+	file.write(history.losses)
+	file.close
+	return
 
 #Helper functions
 def prepare_image(image): # Get image to correct shape
@@ -135,7 +143,16 @@ def generator(lines, batch_size=32):
 			#Create numpy arrays
 			X_train = np.array(images)
 			y_train = np.array(measurements)
-			yield sklearn.utils.shuffle(X_train, y_train) 
+			yield sklearn.utils.shuffle(X_train, y_train)
+
+#Create a callback for logging loss
+#https://keras.io/callbacks/#create-a-callback
+class LossHistory(Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
 
 #Compile and train the model using the generator function
 train_generator = generator(train_samples, BATCH_SIZE)
@@ -162,12 +179,13 @@ model.add(Dropout(0.4))
 model.add(Dense(10))
 model.add(Dense(1))
 
+history = LossHistory()
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, \
 					steps_per_epoch=np.ceil(3 * len(train_samples) / BATCH_SIZE), \
 					epochs=EPOCHS, \
 					verbose=1, \
-					callbacks=None, \
+					callbacks=[history], \
 					validation_data=validation_generator, \
 					validation_steps=np.ceil(3 * len(validation_samples) / BATCH_SIZE), \
 					class_weight=None, \
@@ -175,6 +193,6 @@ model.fit_generator(train_generator, \
 					workers=1, \
 					pickle_safe=False, \
 					initial_epoch=0)
-
+print_training(history)
 model.save('model.h5')
 exit()
