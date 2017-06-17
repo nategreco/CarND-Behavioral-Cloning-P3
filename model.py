@@ -19,10 +19,12 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 3.0
-STEERING_CUTOFF = 0.5
-BATCH_SIZE = 32
-EPOCHS = 10
+SIDE_IMAGE_OFFSET = 1.5
+STEERING_CUTOFF = 0.8
+BATCH_SIZE = 128
+LEARNING_RATE = 0.001
+DECAY_RATE = 1.0
+EPOCHS = 5
 
 def print_training(history):
 	file = open(LOG_PATH, 'w')
@@ -61,8 +63,8 @@ def augment_image(image): #Augment images
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 10. * np.random.rand() - 5. #Limit +/- 5%
-	sf_y = 10. * np.random.rand() - 5. #Limit +/- 5%
+	sf_x = 8. * np.random.rand() - 4. #Limit +/- 4%
+	sf_y = 8. * np.random.rand() - 4. #Limit +/- 4%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -73,15 +75,15 @@ def augment_image(image): #Augment images
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 18. * np.random.rand() - 9. #Limit +/- 9 degrees
+	angle = 15. * np.random.rand() - 7.5 #Limit +/- 7.5 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
-	shift_y = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .05) #Limit +/- 5%
+	shift_x = int(.08 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .04) #Limit +/- 4%
+	shift_y = int(.08 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .04) #Limit +/- 4%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -187,6 +189,8 @@ model.add(Dense(1))
 
 history = LossHistory()
 model.compile(loss='mse', optimizer='adam')
+model.optimizer.lr.assign(LEARNING_RATE)
+model.optimizer.decay.assign(DECAY_RATE)
 model.fit_generator(train_generator, \
 					steps_per_epoch=np.ceil(3 * len(train_samples) / BATCH_SIZE), \
 					epochs=EPOCHS, \
