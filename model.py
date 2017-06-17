@@ -22,11 +22,11 @@ INPUT_CHANNELS = 3
 SIDE_IMAGE_OFFSET = 3.0
 STEERING_CUTOFF = 0.5
 BATCH_SIZE = 32
-EPOCHS = 8
+EPOCHS = 10
 
 def print_training(history):
 	file = open(LOG_PATH, 'w')
-	file.write(history.losses)
+	file.write(str(history.losses))
 	file.close
 	return
 
@@ -35,22 +35,23 @@ def prepare_image(image): # Get image to correct shape
 	#Work with new copy
 	working_image = image.copy()
 
-	#Resize
-	if working_image.shape[1] > working_image.shape[0]:
-		working_image = cv2.resize(working_image, \
-								   (INPUT_COLS, \
-									int((working_image.shape[0] / working_image.shape[1]) * float(INPUT_ROWS))))
-	else:
-		working_image = cv2.resize(working_image, \
-								   (int((working_image.shape[1] / working_image.shape[0]) * float(INPUT_COLS)), \
-									INPUT_ROWS))
+	#Resize if too tall, but maintain aspect ratio
+	if working_image.shape[0] > INPUT_ROWS:
+		new_height = INPUT_ROWS
+		new_width = int((working_image.shape[1] / working_image.shape[0]) * float(INPUT_ROWS))
+		working_image = cv2.resize(working_image, (new_width, new_height))
+	#Resize if too wide, but maintain aspect ratio
+	if working_image.shape[1] > INPUT_COLS:
+		new_height = int((working_image.shape[0] / working_image.shape[1]) * float(INPUT_COLS))
+		new_width = INPUT_COLS
+		working_image = cv2.resize(working_image, (new_width, new_height))
 		
-	#Pad to 32x32
+	#Pad to input shape
 	working_image = cv2.copyMakeBorder(working_image, \
-									   0, \
-									   INPUT_ROWS - working_image.shape[0], \
-									   0, \
-									   INPUT_COLS - working_image.shape[1], \
+									   int((INPUT_ROWS - working_image.shape[0]) / 2), \
+									   int((INPUT_ROWS - working_image.shape[0]) / 2), \
+									   int((INPUT_COLS - working_image.shape[1]) / 2), \
+									   int((INPUT_COLS - working_image.shape[1]) / 2), \
 									   cv2.BORDER_CONSTANT, \
 									   value=0)
 	
@@ -62,6 +63,7 @@ def augment_image(image): #Augment images
 	#Scale
 	sf_x = 10. * np.random.rand() - 5. #Limit +/- 5%
 	sf_y = 10. * np.random.rand() - 5. #Limit +/- 5%
+	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
 							   fx=(sf_x / 100.) + 1., \
@@ -73,13 +75,17 @@ def augment_image(image): #Augment images
 	center_y = int(working_image.shape[0] / 2.)
 	angle = 18. * np.random.rand() - 9. #Limit +/- 9 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
-	working_image = cv2.warpAffine(working_image, matrix, working_image.shape[:2])
+	working_image = cv2.warpAffine(working_image, \
+								   matrix, \
+								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
 	shift_x = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
 	shift_y = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .05) #Limit +/- 5%
-	matrix = np.float32([[1,0,shift_x],[0,1,shift_y]])
-	working_image = cv2.warpAffine(working_image, matrix, working_image.shape[:2])
+	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
+	working_image = cv2.warpAffine(working_image, \
+								   matrix, \
+								   (working_image.shape[1], working_image.shape[0]))
 	
 	#Get back to correct shape
 	working_image = prepare_image(working_image.copy())
