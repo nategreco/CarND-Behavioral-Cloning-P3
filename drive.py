@@ -11,6 +11,7 @@ import eventlet.wsgi
 from PIL import Image
 from flask import Flask
 from io import BytesIO
+from collections import deque
 
 from keras.models import load_model
 import h5py
@@ -21,6 +22,20 @@ app = Flask(__name__)
 model = None
 prev_image_array = None
 
+#Moving average smooths the steering
+class MovingAverage:
+    def __init__(self, retain):
+        self.retain = retain
+        self.previous = deque()
+
+    def update(self, value):
+        #Update values
+        self.previous.append(value)
+        #Maintain retain amount
+        if len(self.previous) > self.retain:
+            self.previous.popleft()
+        #Return average
+        return np.mean(self.previous)
 
 class SimplePIController:
     def __init__(self, Kp, Ki):
@@ -46,7 +61,7 @@ class SimplePIController:
 controller = SimplePIController(0.1, 0.002)
 set_speed = 15
 controller.set_desired(set_speed)
-
+average = MovingAverage(8)
 
 @sio.on('telemetry')
 def telemetry(sid, data):
@@ -65,8 +80,8 @@ def telemetry(sid, data):
 
         throttle = controller.update(float(speed))
 
+        send_control(average.update(steering_angle), throttle)
         #print(steering_angle, throttle)
-        send_control(steering_angle, throttle)
 
         # save frame
         if args.image_folder != '':
