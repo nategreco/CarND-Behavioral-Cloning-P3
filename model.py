@@ -164,12 +164,12 @@ model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, \
-					steps_per_epoch=np.ceil(len(train_samples) / BATCH_SIZE), \
+					steps_per_epoch=np.ceil(3 * len(train_samples) / BATCH_SIZE), \
 					epochs=EPOCHS, \
 					verbose=1, \
 					callbacks=None, \
 					validation_data=validation_generator, \
-					validation_steps=np.ceil(len(validation_samples) / BATCH_SIZE), \
+					validation_steps=np.ceil(3 * len(validation_samples) / BATCH_SIZE), \
 					class_weight=None, \
 					max_q_size=10, \
 					workers=1, \
