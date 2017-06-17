@@ -17,9 +17,10 @@ DATA_PATH = './my-data/'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
+SIDE_IMAGE_OFFSET = 3.0
 STEERING_CUTOFF = 0.5
 BATCH_SIZE = 32
-EPOCHS = 7
+EPOCHS = 8
 
 #Helper functions
 def prepare_image(image): # Get image to correct shape
@@ -102,26 +103,34 @@ def generator(lines, batch_size=32):
 				r_filename = line[2].split('/')[-1]
 				current_path = DATA_PATH + 'IMG/'
 				c_image = cv2.imread(current_path + c_filename)
-				#l_image = cv2.imread(current_path + l_filename)
-				#r_image = cv2.imread(current_path + r_filename)
+				l_image = cv2.imread(current_path + l_filename)
+				r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					#l_image = augment_image(l_image)
-					#r_image = augment_image(r_image)
+					l_image = augment_image(l_image)
+					r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				#l_image = cv2.flip(r_image, 1)
-				#r_image = cv2.flip(l_image, 1)
+				l_image = cv2.flip(r_image, 1)
+				r_image = cv2.flip(l_image, 1)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					#l_image = augment_image(l_image)
-					#r_image = augment_image(r_image)
+					l_image = augment_image(l_image)
+					r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 
 			#Create numpy arrays
 			X_train = np.array(images)
@@ -138,18 +147,18 @@ model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1., input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
 model.add(Cropping2D(cropping=((60, 20), (0, 0)))) #(80, 320, 3)
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.1))
+model.add(SpatialDropout2D(0.2))
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.1))
+model.add(SpatialDropout2D(0.2))
 model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.1))
+model.add(SpatialDropout2D(0.2))
 model.add(Conv2D(64, (3, 3), activation="relu"))
 model.add(Conv2D(64, (3, 3), activation="relu"))
 model.add(Flatten())
 model.add(Dense(100))
-model.add(Dropout(0.3))
+model.add(Dropout(0.4))
 model.add(Dense(50))
-model.add(Dropout(0.3))
+model.add(Dropout(0.4))
 model.add(Dense(10))
 model.add(Dense(1))
 
