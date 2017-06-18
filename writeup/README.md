@@ -25,6 +25,9 @@ The goals / steps of this project are the following:
 [image7]: ./TurnOff.jpg "TurnOff"
 [image8]: ./TurnOffPOV.jpg "TurnOffPOV"
 [image9]: ./Model.jpg "Model"
+[image10]: ./left.jpg "Left"
+[image11]: ./center.jpg "Center"
+[image12]: ./right.jpg "Right"
 
 ---
 
@@ -94,6 +97,10 @@ I used my own training data for training, which included 3 laps counter-clockwis
 * Images were normalized in first layer - (model.py:187-188)
 * Images were cropped in second layer - (model.py:189)
 
+See example left/center/right images:
+
+![Left][image10] ![Center][image11] ![Right][image12]
+
 
 ### Model Architecture and Training Strategy
 
@@ -109,6 +116,8 @@ Problematic turn-off:
 
 ![Bridge Above][image5]
 
+Vehicle Point of View:
+
 ![Bridge POV][image6]
 
 
@@ -117,6 +126,8 @@ The final issue was the tendency of the car to drive off course after the bridge
 Problematic turn-off:
 
 ![Turn-off Above][image7]
+
+Vehicle Point of View:
 
 ![Turn-off POV][image8]
 
@@ -163,12 +174,15 @@ My final model:
 | Fully connected 		| Outputs 29x1 										|
 | Fully connected 		| Outputs 1 (steering position normalized) 			|
 
+Visual depiction:
+
 ![Model][image9]
 
 #### 3. Creation of the Training Set & Training Process
 
-Training data was shuffled, augmented, and split into training and validation sets.
+Data sets were handled utilizing a generator function.  This way data was processed during training, reducing memory requirements during training.  Prior to training the data (actually lines of the log file) were split (model.py:108) 80/20 between the train and validation sets.  Then, when first called, the generator function shuffled the data (model.py:125), and from there on out when each batch was called the data was augmented as described above.
 
-Before and after example 2:
+Before and after augmentation:
 
 ![Before][image3] ![After][image4]
+
