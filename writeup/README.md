@@ -72,9 +72,13 @@ Next, image augmentation was implemented on the training and validation sets for
 * Random translation in both X and Y, +/- 3% - (model.py:87-93)
 * Preparing of image to bring back to Keras model input shape - (model.py:39-63)
 
-Before and after augmentation:
+Before and after example 1:
 
 ![Before][image1] ![After][image2]
+
+Before and after example 2:
+
+![Before][image3] ![After][image4]
 
 Also, all images used in the training sets were flipped to prevent the model from favoring left turns due to a counter-clockwise track.
 
@@ -106,20 +110,9 @@ See example left/center/right images:
 
 #### 1. Solution Design Approach
 
-As stated above, initial model began with the Nvidia End-to-End model, the only additional layer being the 2nd for cropping to remove irrelevant data from the model such as the sky or hood of the car.  Next, both 2D and 1D dropout were added to prevent overfitting.  With this model simulation showed the vehicle maintaining the center, but as soon as it began to get out of center it would go off course.  This was because no data had been provided for recovery situations, when a greater steering angle is required due to off center.
+As stated above, initial model began with the Nvidia End-to-End model, the only additional layers being resizing for performance and cropping to remove irrelevant data from the model such as the sky or hood of the car.  Additionally, some of the step sizes needed tweaked due to the size of the image.  Next, both 2D and 1D dropout were added to prevent overfitting.  With this model simulation showed the vehicle maintaining the center, but as soon as it began to get out of center it would go off course.  This was because no data had been provided for recovery situations, when a greater steering angle is required due to off center.
 
 My first attempt to correct this condition was to use training data with the car heading towards the road edge and steering away, so I recorded data with a lot of swerving.  This did not help, and in fact made my vehicle want to drive off the road on a straight line.  This is because the capture data also included the erroneous data of me intentionally steering towards the road edge to create the recovery condition.  A better alternative I found was utilization of the left and right images.  So these images were added to the training set as well but with a steering position offset, which turned out to be an essential parameter for tuning the behavior of the car.  A larger offset would result in more aggressive steering, and a smaller one would be sluggish to react.  But with this approach, the car would track straight on an otherwise straight road.
-
-The next issue was the brdige.
-
-Problematic turn-off:
-
-![Bridge Above][image5]
-
-Vehicle Point of View:
-
-![Bridge POV][image6]
-
 
 The final issue was the tendency of the car to drive off course after the bridge on track 1.  This was due to a 'dirt turn-off' area where the road line was defined by just a transition of pavement to dirt and no clear road markings similar to the rest of the track.  The solution of the problem was to generalize the model.  This was done by adding both data from the second track and augmenting the image.  Creating much more of a variety of input data allowed the model to reduce its reliance on a yellow or hatched white/red road marking in the corners and then the model would steer away from the dirt turnoff.
 
@@ -182,7 +175,4 @@ Visual depiction:
 
 Data sets were handled utilizing a generator function.  This way data was processed during training, reducing memory requirements during training.  Prior to training the data (actually lines of the log file) were split (model.py:108) 80/20 between the train and validation sets.  Then, when first called, the generator function shuffled the data (model.py:125), and from there on out when each batch was called the data was augmented as described above.
 
-Before and after augmentation:
-
-![Before][image3] ![After][image4]
 
