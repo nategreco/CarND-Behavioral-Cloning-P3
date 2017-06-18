@@ -68,13 +68,9 @@ Next, image augmentation was implemented on the training and validation sets for
 * Random translation in both X and Y, +/- 3% - (model.py:87-93)
 * Preparing of image to bring back to Keras model input shape - (model.py:39-63)
 
-Before and after example 1:
+Before and after augmentation:
 
 ![Before][image1] ![After][image2]
-
-Before and after example 2:
-
-![Before][image3] ![After][image4]
 
 Also, all images used in the training sets were flipped to prevent the model from favoring left turns due to a counter-clockwise track.
 
@@ -127,9 +123,11 @@ Problematic turn-off:
 The final model and training values provided desireable behavior on track 1, and drove relatively well on track 2 although occasional lange changes would happen due to the model following the road width instead of lane markings.  The final touch was implementing smoother steering control by using a moving average of the steering command (drive.py:35-38).  This reduced 'jitter' in the steering and made it more natural and time weighted.
 
 Track 1 video:
+
 [![Track 1 video](https://youtu.be/fzEnhFJG6dU/0.jpg)](https://youtu.be/fzEnhFJG6dU)
 
 Track 2 video:
+
 [![Track 2 video](https://youtu.be/fzEnhFJG6dU/0.jpg)](https://youtu.be/fzEnhFJG6dU)
 
 
@@ -137,36 +135,38 @@ Track 2 video:
 
 My final model:
 
-| Layer         		| Description		        						| 
-|:---------------------:|:-------------------------------------------------:| 
-| Input         		| 160x320x3 BGR image, normalized with mean 0.0 	|
-| Cropping2D	     	| 50 pixed removed from top and 10 from bottom 		|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid padding 			|
+| Layer         		| Description		        						|
+|:---------------------:|:-------------------------------------------------:|
+| Input         		| 160x320x3 BGR image 								|
+| Resize 		     	| Resized to 80x160x3 								|
+| Lambda 		     	| Image normalized with 0 mean 						|
+| Cropping2D	     	| Outputs 50x160x3 									|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 23x78x3	|
 | RELU					| 													|
-| SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid padding 			|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 10x37x3 	|
 | RELU					| 													|
-| SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid padding 			|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 8x35x3 	|
 | RELU					| 													|
-| SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid padding 			|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 6x33x3 	|
 | RELU					| 													|
-| SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid padding 			|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x31x3 	|
 | RELU					| 													|
-| Flatten				| 													|
-| Fully connected 		| Outputs 1x100 									|
-| RELU					| 													|
+| Flatten				| Outputs 372x1										|
+| Fully connected 		| Outputs 100x1 									|
 | Dropout				| 50% keep probability 								|
-| Fully connected 		| Outputs 1x50 										|
-| RELU					| 													|
+| Fully connected 		| Outputs 50x1 										|
 | Dropout				| 50% keep probability 								|
-| Fully connected 		| Outputs 1x10 										|
-| RELU					| 													|
-| Dropout				| 50% keep probability 								|
+| Fully connected 		| Outputs 10x1 										|
 | Fully connected 		| Outputs 1 (steering position normalized) 			|
 
 
 #### 3. Creation of the Training Set & Training Process
 
+Training data was shuffled, augmented, and split into training and validation sets.
+
+Before and after example 2:
+
+![Before][image3] ![After][image4]
