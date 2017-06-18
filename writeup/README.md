@@ -58,12 +58,12 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-The initial model was based off of the Nvidia end-to-end model shown [here](https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/), consisting of 5 convolutional layers and 4 fully connected layers with a normalized input and flattening layer inbetween.  Input was normalized with a Keras lambda layer (model.py:187-188), and then cropped with a Keras Cropping2D layer(model.py:189) to remove noise from the image (sky and hood of the car).  All activation functions used were ReLU and the output was a normalized steering position.  The overall model structure can be seen here: [model.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.py):189-207.
+The initial model was based off of the Nvidia end-to-end model shown [here](https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/), consisting of 5 convolutional layers and 4 fully connected layers with a normalized input and flattening layer inbetween.  The general structure and filter sizes remained the same but strides  and input had to be tweaked.  Input was resized with a Keras lambda layer using the tensorflow backend (model.py:188-190) then normalized with a Keras lambda layer (model.py:191).  Next, cropped with a Keras Cropping2D layer(model.py:192) to remove noise from the image (sky and hood of the car).  All activation functions used were ReLU and the output was a normalized steering position.  The overall model structure can be seen here: [model.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.py):187-207.
 
 
 #### 2. Attempts to reduce overfitting in the model
 
-Overfitting in the model was prevented in a number of ways. First, a Keras SpatialDropout2D layer was added between each Convolution layer (model.py:191,193,195,197,199), and similarily a Keras Dropout layer was added after each fully connected layer (model.py:202,204,206).  Dropout probabilities of 50% were used.
+Overfitting in the model was prevented in a number of ways. First, a Keras SpatialDropout2D layer was added between the first three Convolution layers (model.py:194,196,198), and similarily a Keras Dropout layer was added after three of the fully connected layers (model.py:203,205).
 
 Next, image augmentation was implemented on the training and validation sets for images with non-zero steering position.  Augmentation (model.py:65-98) consisted of the following:
 
@@ -98,8 +98,9 @@ I used my own training data for training, which included 3 laps counter-clockwis
 * Center image and left/right images with steering offset were added - (model.py:141-148)
 * Images of non-zero steering positions were augmented as described above - (model.py:137-140,153-156)
 * All 3 images were then flpped and added again, making 6 samples total per position - (model.py:149-164)
-* Images were normalized in first layer - (model.py:187-188)
-* Images were cropped in second layer - (model.py:189)
+* Images were resized in the first layer - (model.py:188-190) 
+* Images were normalized in the second layer - (model.py:191)
+* Images were cropped in third layer - (model.py:192)
 
 See example left/center/right images:
 
