@@ -24,6 +24,7 @@ The goals / steps of this project are the following:
 [image6]: ./BridgePOV.JPG "BridgePOV"
 [image7]: ./TurnOff.JPG "TurnOff"
 [image8]: ./TurnOffPOV.JPG "TurnOffPOV"
+[image9]: ./Model.jpg "Model"
 
 ---
 
@@ -141,20 +142,20 @@ My final model:
 | Resize 		     	| Resized to 80x160x3 								|
 | Lambda 		     	| Image normalized with 0 mean 						|
 | Cropping2D	     	| Outputs 50x160x3 									|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 23x78x3	|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 23x78x24	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 10x37x3 	|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 10x37x36 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 8x35x3 	|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 8x35x48 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 6x33x3 	|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 6x33x64 	|
 | RELU					| 													|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x31x3 	|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x31x64 	|
 | RELU					| 													|
-| Flatten				| Outputs 372x1										|
+| Flatten				| Outputs 7936x1									|
 | Fully connected 		| Outputs 100x1 									|
 | Dropout				| 50% keep probability 								|
 | Fully connected 		| Outputs 50x1 										|
@@ -162,6 +163,7 @@ My final model:
 | Fully connected 		| Outputs 10x1 										|
 | Fully connected 		| Outputs 1 (steering position normalized) 			|
 
+![Model][image9]
 
 #### 3. Creation of the Training Set & Training Process
 
