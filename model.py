@@ -24,7 +24,7 @@ STEERING_CUTOFF = 0.8
 BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 3
+EPOCHS = 5
 
 def print_training(history):
 	file = open(LOG_PATH, 'w')
@@ -115,38 +115,38 @@ def generator(lines, batch_size=32):
 			measurements = []
 			for line in batch_lines:
 				c_filename = line[0].split('/')[-1]
-				l_filename = line[1].split('/')[-1]
-				r_filename = line[2].split('/')[-1]
+				#l_filename = line[1].split('/')[-1]
+				#r_filename = line[2].split('/')[-1]
 				current_path = DATA_PATH + 'IMG/'
 				c_image = cv2.imread(current_path + c_filename)
-				l_image = cv2.imread(current_path + l_filename)
-				r_image = cv2.imread(current_path + r_filename)
+				#l_image = cv2.imread(current_path + l_filename)
+				#r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					l_image = augment_image(l_image)
-					r_image = augment_image(r_image)
+					#l_image = augment_image(l_image)
+					#r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
-				images.append(l_image)
-				measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				images.append(r_image)
-				measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				#images.append(l_image)
+				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				#images.append(r_image)
+				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				l_image = cv2.flip(r_image, 1)
-				r_image = cv2.flip(l_image, 1)
+				#l_image = cv2.flip(r_image, 1)
+				#r_image = cv2.flip(l_image, 1)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					l_image = augment_image(l_image)
-					r_image = augment_image(r_image)
+					#l_image = augment_image(l_image)
+					#r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
-				images.append(l_image)
-				measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				images.append(r_image)
-				measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				#images.append(l_image)
+				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				#images.append(r_image)
+				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
 
 			#Create numpy arrays
 			X_train = np.array(images)
