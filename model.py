@@ -19,12 +19,12 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 1.2
-STEERING_CUTOFF = 0.8
+SIDE_IMAGE_OFFSET = 0.5
+STEERING_CUTOFF = 0.3
 BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 5
+EPOCHS = 7
 
 def print_training(history):
 	file = open(LOG_PATH, 'w')
@@ -63,8 +63,8 @@ def augment_image(image): #Augment images
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 1.2 * np.random.rand() - 6. #Limit +/- 6%
-	sf_y = 1.2 * np.random.rand() - 6. #Limit +/- 6%
+	sf_x = .06 * np.random.rand() - 3. #Limit +/- 3%
+	sf_y = .06 * np.random.rand() - 3. #Limit +/- 3%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -75,15 +75,15 @@ def augment_image(image): #Augment images
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 20. * np.random.rand() - 10. #Limit +/- 10 degrees
+	angle = 10. * np.random.rand() - 5. #Limit +/- 5 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = int(.12 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .06) #Limit +/- 6%
-	shift_y = int(.12 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .06) #Limit +/- 6%
+	shift_x = int(.06 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .03) #Limit +/- 3%
+	shift_y = int(.06 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .03) #Limit +/- 3%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -103,6 +103,16 @@ with open(DATA_PATH + 'driving_log.csv') as csvfile:
 
 train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
+current_path = DATA_PATH + 'IMG/'
+#for line in lines:
+#	c_filename = line[0].split('/')[-1]
+#	c_image = cv2.imread(current_path + c_filename)
+#	cv2.imshow('Original', c_image)
+#	c_image = augment_image(c_image)
+#	cv2.imshow('Augmented', c_image)
+#	cv2.waitKey(0)
+	
+
 #Load training data
 def generator(lines, batch_size=32):
 	num_samples = len(lines)
@@ -117,7 +127,6 @@ def generator(lines, batch_size=32):
 				c_filename = line[0].split('/')[-1]
 				l_filename = line[1].split('/')[-1]
 				r_filename = line[2].split('/')[-1]
-				current_path = DATA_PATH + 'IMG/'
 				c_image = cv2.imread(current_path + c_filename)
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
@@ -134,19 +143,19 @@ def generator(lines, batch_size=32):
 				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				#l_image = cv2.flip(r_image, 1)
-				#r_image = cv2.flip(l_image, 1)
+				l_image = cv2.flip(r_image, 1)
+				r_image = cv2.flip(l_image, 1)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					#l_image = augment_image(l_image)
-					#r_image = augment_image(r_image)
+					l_image = augment_image(l_image)
+					r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
-				#images.append(l_image)
-				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				#images.append(r_image)
-				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 
 			#Create numpy arrays
 			X_train = np.array(images)
@@ -170,7 +179,7 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1., input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((60, 20), (0, 0)))) #(80, 320, 3)
+model.add(Cropping2D(cropping=((50, 10), (0, 0)))) #(100, 320, 3)
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
 model.add(SpatialDropout2D(0.2))
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))
@@ -181,9 +190,9 @@ model.add(Conv2D(64, (3, 3), activation="relu"))
 model.add(Conv2D(64, (3, 3), activation="relu"))
 model.add(Flatten())
 model.add(Dense(100))
-model.add(Dropout(0.4))
+model.add(Dropout(0.5))
 model.add(Dense(50))
-model.add(Dropout(0.4))
+model.add(Dropout(0.5))
 model.add(Dense(10))
 model.add(Dense(1))
 
