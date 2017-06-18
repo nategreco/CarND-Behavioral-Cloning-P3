@@ -104,13 +104,13 @@ with open(DATA_PATH + 'driving_log.csv') as csvfile:
 train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
 current_path = DATA_PATH + 'IMG/'
-#for line in lines:
-#	c_filename = line[0].split('/')[-1]
-#	c_image = cv2.imread(current_path + c_filename)
-#	cv2.imshow('Original', c_image)
-#	c_image = augment_image(c_image)
-#	cv2.imshow('Augmented', c_image)
-#	cv2.waitKey(0)
+for line in lines:
+	c_filename = line[0].split('/')[-1]
+	c_image = cv2.imread(current_path + c_filename)
+	cv2.imshow('Original', c_image)
+	c_image = augment_image(c_image)
+	cv2.imshow('Augmented', c_image)
+	cv2.waitKey(0)
 	
 
 #Load training data
