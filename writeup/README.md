@@ -148,19 +148,19 @@ My final model:
 | Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 10x37x36 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 8x35x48 	|
+| Convolution	     	| 2x2 stride, 3x3 filter, valid, outputs 6x33x48 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 6x33x64 	|
-| RELU					| 													|
 | Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x31x64 	|
 | RELU					| 													|
-| Flatten				| Outputs 7936x1									|
-| Fully connected 		| Outputs 100x1 									|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 2x29x64 	|
+| RELU					| 													|
+| Flatten				| Outputs 3712x1									|
+| Fully connected 		| Outputs 232x1 									|
 | Dropout				| 50% keep probability 								|
-| Fully connected 		| Outputs 50x1 										|
+| Fully connected 		| Outputs 58x1 										|
 | Dropout				| 50% keep probability 								|
-| Fully connected 		| Outputs 10x1 										|
+| Fully connected 		| Outputs 29x1 										|
 | Fully connected 		| Outputs 1 (steering position normalized) 			|
 
 ![Model][image9]

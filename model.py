@@ -20,14 +20,14 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.88
+SIDE_IMAGE_OFFSET = 0.9
 STEERING_CUTOFF = 0.3
 
 #Training constants
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 4
+EPOCHS = 3
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -192,18 +192,18 @@ model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
 model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x24
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x370x36
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x37x36
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(48, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->8x35x48
+model.add(Conv2D(48, (5, 5), strides=(1, 1), activation="relu"))	#Conv2D->6x33x48
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->6x33x64
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x64
-model.add(Flatten())												#Flatten->7936x1
-model.add(Dense(100))												#Fully connected->100x1
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->2x29x64
+model.add(Flatten())												#Flatten->3712x1
+model.add(Dense(232))												#Fully connected->232x1
 model.add(Dropout(0.5))												#Dropout
-model.add(Dense(50))												#Fully connected->50x1
+model.add(Dense(58))												#Fully connected->58x1
 model.add(Dropout(0.5))												#Dropout
-model.add(Dense(10))												#Fully connected->10x1
+model.add(Dense(29))												#Fully connected->29x1
 model.add(Dense(1))													#Output
 
 #Train
