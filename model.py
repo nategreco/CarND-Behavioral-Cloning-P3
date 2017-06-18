@@ -13,7 +13,7 @@ from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
 from keras.callbacks import Callback
 
-#Define some constants
+#Training set preparation constants
 DATA_PATH = './my-data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
@@ -21,19 +21,22 @@ INPUT_ROWS = 160
 INPUT_CHANNELS = 3
 SIDE_IMAGE_OFFSET = 0.88
 STEERING_CUTOFF = 0.3
+
+#Training constants
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
 EPOCHS = 4
 
-def print_training(history):
+#Helper functions
+def print_training(history):	#Print loss by batch after training for reference
 	file = open(LOG_PATH, 'w')
 	file.write(str(history.losses))
 	file.close
 	return
 
-#Helper functions
-def prepare_image(image): # Get image to correct shape
+
+def prepare_image(image):	# Get image to correct shape for input to first layer
 	#Work with new copy
 	working_image = image.copy()
 
@@ -59,7 +62,7 @@ def prepare_image(image): # Get image to correct shape
 	
 	return working_image
 
-def augment_image(image): #Augment images
+def augment_image(image):	#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
@@ -103,6 +106,7 @@ with open(DATA_PATH + 'driving_log.csv') as csvfile:
 
 train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
+#For testing of augmentation
 current_path = DATA_PATH + 'IMG/'
 #for line in lines:
 #	c_filename = line[0].split('/')[-1]
@@ -137,14 +141,15 @@ def generator(lines, batch_size=32):
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
+				#Use left and right but add offset to learn recovery
 				images.append(l_image)
 				measurements.append(measurement + SIDE_IMAGE_OFFSET)
 				images.append(r_image)
 				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				l_image = cv2.flip(r_image, 1)
-				r_image = cv2.flip(l_image, 1)
+				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
+				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
 					l_image = augment_image(l_image)
@@ -152,6 +157,7 @@ def generator(lines, batch_size=32):
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
+				#Use left and right but add offset to learn recovery
 				images.append(l_image)
 				measurements.append(measurement + SIDE_IMAGE_OFFSET)
 				images.append(r_image)
@@ -178,27 +184,29 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-model.add(Lambda(lambda x: x / 127.5 - 1., input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((50, 10), (0, 0)))) #(100, 320, 3)
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.5))
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.5))
-model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.5))
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))
-model.add(SpatialDropout2D(0.5))
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))
-model.add(SpatialDropout2D(0.5))
-model.add(Flatten())
-model.add(Dense(100, activation="relu"))
-model.add(Dropout(0.5))
-model.add(Dense(50, activation="relu"))
-model.add(Dropout(0.5))
-model.add(Dense(10, activation="relu"))
-model.add(Dropout(0.5))
-model.add(Dense(1))
+model.add(Lambda(lambda x: x / 127.5 - 1., \
+				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
+model.add(Cropping2D(cropping=((50, 10), (0, 0))))						#Crop
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
+model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
+model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
+model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
+model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
+model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(Flatten())													#Flatten													
+model.add(Dense(100, activation="relu"))								#Fully connected
+model.add(Dropout(0.5))													#Dropout
+model.add(Dense(50, activation="relu"))									#Fully connected
+model.add(Dropout(0.5))													#Dropout
+model.add(Dense(10, activation="relu"))									#Fully connected
+model.add(Dropout(0.5))													#Dropout
+model.add(Dense(1))														#Output
 
+#Train
 history = LossHistory()
 model.compile(loss='mse', optimizer='adam')
 model.optimizer.lr.assign(LEARNING_RATE)
@@ -216,5 +224,7 @@ model.fit_generator(train_generator, \
 					pickle_safe=False, \
 					initial_epoch=0)
 print_training(history)
+
+#Save trained model for use with drive.py
 model.save('model.h5')
 exit()
