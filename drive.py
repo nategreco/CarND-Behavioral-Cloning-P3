@@ -61,7 +61,7 @@ class SimplePIController:
 controller = SimplePIController(0.1, 0.002)
 set_speed = 15
 controller.set_desired(set_speed)
-average = MovingAverage(8)
+average = MovingAverage(3)
 
 @sio.on('telemetry')
 def telemetry(sid, data):
