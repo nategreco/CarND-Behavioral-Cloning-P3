@@ -20,10 +20,10 @@ The goals / steps of this project are the following:
 [image2]: ./Augmented.JPG "Augmented"
 [image3]: ./Original2.JPG "Original2"
 [image4]: ./Augmented2.JPG "Augmented2"
-[image5]: ./Bridge.JPG "Bridge"
-[image6]: ./BridgePOV.JPG "BridgePOV"
-[image7]: ./TurnOff.JPG "TurnOff"
-[image8]: ./TurnOffPOV.JPG "TurnOffPOV"
+[image5]: ./Bridge.jpg "Bridge"
+[image6]: ./BridgePOV.jpg "BridgePOV"
+[image7]: ./TurnOff.jpg "TurnOff"
+[image8]: ./TurnOffPOV.jpg "TurnOffPOV"
 [image9]: ./Model.jpg "Model"
 
 ---
