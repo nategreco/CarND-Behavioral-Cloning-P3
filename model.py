@@ -185,26 +185,26 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-resize_rows, resize_cols = int(INPUT_ROWS / 2), int(INPUT_COLS / 2)
+resize_rows, resize_cols = int(INPUT_ROWS / 2), int(INPUT_COLS / 2)	#Resize->80x160x3
 model.add(Lambda(lambda x: ktf.image.resize_images(x, (resize_rows, resize_cols)), \
-				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))	#Resize
-model.add(Lambda(lambda x: x / 127.5 - 1.))								#Normalize
-model.add(Cropping2D(cropping=((25, 5), (0, 0))))						#Crop
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.2))										#2D-Dropout
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.2))										#2D-Dropout
-model.add(Conv2D(48, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.2))										#2D-Dropout
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
-model.add(Flatten())													#Flatten
-model.add(Dense(100))													#Fully connected
-model.add(Dropout(0.5))													#Dropout
-model.add(Dense(50))													#Fully connected
-model.add(Dropout(0.5))													#Dropout
-model.add(Dense(10))													#Fully connected
-model.add(Dense(1))														#Output
+				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))
+model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
+model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x3
+model.add(SpatialDropout2D(0.2))									#2D-Dropout
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x370x3
+model.add(SpatialDropout2D(0.2))									#2D-Dropout
+model.add(Conv2D(48, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->8x35x3
+model.add(SpatialDropout2D(0.2))									#2D-Dropout
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->6x33x3
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x3
+model.add(Flatten())												#Flatten->372x1
+model.add(Dense(100))												#Fully connected->100x1
+model.add(Dropout(0.5))												#Dropout
+model.add(Dense(50))												#Fully connected->50x1
+model.add(Dropout(0.5))												#Dropout
+model.add(Dense(10))												#Fully connected->10x1
+model.add(Dense(1))													#Output
 
 #Train
 history = LossHistory()
