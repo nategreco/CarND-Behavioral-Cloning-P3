@@ -115,23 +115,23 @@ def generator(lines, batch_size=32):
 			measurements = []
 			for line in batch_lines:
 				c_filename = line[0].split('/')[-1]
-				#l_filename = line[1].split('/')[-1]
-				#r_filename = line[2].split('/')[-1]
+				l_filename = line[1].split('/')[-1]
+				r_filename = line[2].split('/')[-1]
 				current_path = DATA_PATH + 'IMG/'
 				c_image = cv2.imread(current_path + c_filename)
-				#l_image = cv2.imread(current_path + l_filename)
-				#r_image = cv2.imread(current_path + r_filename)
+				l_image = cv2.imread(current_path + l_filename)
+				r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					#l_image = augment_image(l_image)
-					#r_image = augment_image(r_image)
+					l_image = augment_image(l_image)
+					r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
-				#images.append(l_image)
-				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				#images.append(r_image)
-				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
 				#l_image = cv2.flip(r_image, 1)
