@@ -19,7 +19,7 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.65
+SIDE_IMAGE_OFFSET = 0.88
 STEERING_CUTOFF = 0.3
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
@@ -181,19 +181,22 @@ model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1., input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
 model.add(Cropping2D(cropping=((50, 10), (0, 0)))) #(100, 320, 3)
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.2))
+model.add(SpatialDropout2D(0.5))
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.2))
+model.add(SpatialDropout2D(0.5))
 model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))
-model.add(SpatialDropout2D(0.2))
-model.add(Conv2D(64, (3, 3), activation="relu"))
-model.add(Conv2D(64, (3, 3), activation="relu"))
+model.add(SpatialDropout2D(0.5))
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))
+model.add(SpatialDropout2D(0.5))
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))
+model.add(SpatialDropout2D(0.5))
 model.add(Flatten())
-model.add(Dense(100))
+model.add(Dense(100, activation="relu"))
 model.add(Dropout(0.5))
-model.add(Dense(50))
+model.add(Dense(50, activation="relu"))
 model.add(Dropout(0.5))
-model.add(Dense(10))
+model.add(Dense(10, activation="relu"))
+model.add(Dropout(0.5))
 model.add(Dense(1))
 
 history = LossHistory()
