@@ -51,11 +51,23 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
+TODO - Started with Nvidia end-to-end model shown [here](https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/)
+
+
+
+
+
 My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
 
 The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
 
 #### 2. Attempts to reduce overfitting in the model
+
+TODO - 1D/2D Dropout and image augmentation
+
+
+
+
 
 The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
 
@@ -63,9 +75,19 @@ The model was trained and validated on different data sets to ensure that the mo
 
 #### 3. Model parameter tuning
 
+TODO - Adam optimizer with default learning rate, 5 epochs, steering offset for augmented data super senitive
+
+
+
+
 The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
 
 #### 4. Appropriate training data
+
+TODO - Augmented data, flipped data, left and right camera, different courses, forward and backward, multiple laps.  17925 individual samples which were turned into 107550 samples after left/right/center and flipped
+
+ 
+
 
 Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
 
@@ -74,6 +96,11 @@ For details about how I created the training data, see the next section.
 ### Model Architecture and Training Strategy
 
 #### 1. Solution Design Approach
+
+TODO - Started with Nvidia, added dropout, added augmentation, added left/right image due to no recovery image. Descript conudrum with recovery image...
+
+
+
 
 The overall strategy for deriving a model architecture was to ...
 
@@ -91,6 +118,39 @@ At the end of the process, the vehicle is able to drive autonomously around the 
 
 #### 2. Final Model Architecture
 
+
+My final model:
+
+| Layer         		| Description		        						| 
+|:---------------------:|:-------------------------------------------------:| 
+| Input         		| 160x320x3 BGR image, normalized with mean 0.0 	|
+| Cropping2D	     	| 50 pixed removed from top and 10 from bottom 		|
+| Convolution	     	| 2x2 stride, valid padding 						|
+| RELU					| 													|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 2x2 stride, valid padding 						|
+| RELU					| 													|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 2x2 stride, valid padding 						|
+| RELU					| 													|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 2x2 stride, valid padding 						|
+| RELU					| 													|
+| SpatialDropout2D 		| 80% keep probability 								|
+| Convolution	     	| 2x2 stride, valid padding 						|
+| RELU					| 													|
+| Flatten				| 													|
+| Fully connected 		| Outputs 1x100 									|
+| RELU					| 													|
+| Dropout				| 50% keep probability 								|
+| Fully connected 		| Outputs 1x50 										|
+| RELU					| 													|
+| Dropout				| 50% keep probability 								|
+| Fully connected 		| Outputs 1x10 										|
+| RELU					| 													|
+| Dropout				| 50% keep probability 								|
+| Fully connected 		| Outputs 1 (steering position normalized) 			|
+
 The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
 
 Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
@@ -98,6 +158,8 @@ Here is a visualization of the architecture (note: visualizing the architecture 
 ![alt text][image1]
 
 #### 3. Creation of the Training Set & Training Process
+
+TODO - 17925 samples x 6 = 107550 samples
 
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
 
