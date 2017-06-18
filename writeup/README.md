@@ -16,14 +16,14 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./Original.png "Original"
+[image1]: ./Original.JPG "Original"
 [image2]: ./Augmented.JPG "Augmented"
-[image3]: ./Original2.png "Original2"
-[image4]: ./Augmented2.png "Augmented2"
-[image5]: ./Bridge.png "Bridge"
-[image6]: ./BridgePOV.png "BridgePOV"
-[image7]: ./TurnOff.png "TurnOff"
-[image8]: ./TurnOffPOV.png "TurnOffPOV"
+[image3]: ./Original2.JPG "Original2"
+[image4]: ./Augmented2.JPG "Augmented2"
+[image5]: ./Bridge.JPG "Bridge"
+[image6]: ./BridgePOV.JPG "BridgePOV"
+[image7]: ./TurnOff.JPG "TurnOff"
+[image8]: ./TurnOffPOV.JPG "TurnOffPOV"
 
 ---
 
@@ -124,6 +124,12 @@ Problematic turn-off:
 
 The final model and training values provided desireable behavior on track 1, and drove relatively well on track 2 although occasional lange changes would happen due to the model following the road width instead of lane markings.  The final touch was implementing smoother steering control by using a moving average of the steering command (drive.py:35-38).  This reduced 'jitter' in the steering and made it more natural and time weighted.
 
+Track 1 video:
+[![Track 1 video](https://youtu.be/fzEnhFJG6dU/0.jpg)](https://youtu.be/fzEnhFJG6dU)
+
+Track 2 video:
+[![Track 2 video](https://youtu.be/fzEnhFJG6dU/0.jpg)](https://youtu.be/fzEnhFJG6dU)
+
 
 #### 2. Final Model Architecture
 
@@ -133,19 +139,19 @@ My final model:
 |:---------------------:|:-------------------------------------------------:| 
 | Input         		| 160x320x3 BGR image, normalized with mean 0.0 	|
 | Cropping2D	     	| 50 pixed removed from top and 10 from bottom 		|
-| Convolution	     	| 2x2 stride, valid padding 						|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid padding 			|
 | RELU					| 													|
 | SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 2x2 stride, valid padding 						|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid padding 			|
 | RELU					| 													|
 | SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 2x2 stride, valid padding 						|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid padding 			|
 | RELU					| 													|
 | SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 2x2 stride, valid padding 						|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid padding 			|
 | RELU					| 													|
 | SpatialDropout2D 		| 50% keep probability 								|
-| Convolution	     	| 2x2 stride, valid padding 						|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid padding 			|
 | RELU					| 													|
 | Flatten				| 													|
 | Fully connected 		| Outputs 1x100 									|
