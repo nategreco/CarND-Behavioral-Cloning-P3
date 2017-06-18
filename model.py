@@ -204,12 +204,12 @@ model.compile(loss='mse', optimizer='adam')
 model.optimizer.lr.assign(LEARNING_RATE)
 model.optimizer.decay.assign(DECAY_RATE)
 model.fit_generator(train_generator, \
-					steps_per_epoch=np.ceil(3 * len(train_samples) / BATCH_SIZE), \
+					steps_per_epoch=np.ceil(6 * len(train_samples) / BATCH_SIZE), \
 					epochs=EPOCHS, \
 					verbose=1, \
 					callbacks=[history], \
 					validation_data=validation_generator, \
-					validation_steps=np.ceil(3 * len(validation_samples) / BATCH_SIZE), \
+					validation_steps=np.ceil(6 * len(validation_samples) / BATCH_SIZE), \
 					class_weight=None, \
 					max_q_size=10, \
 					workers=1, \
