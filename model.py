@@ -7,11 +7,12 @@ import numpy as np
 import sklearn
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda, Cropping2D
+from keras.layers import Flatten, Dense, Lambda, Cropping2D, Input
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
 from keras.callbacks import Callback
+from keras.backend import tf as ktf
 
 #Training set preparation constants
 DATA_PATH = './my-data/'
@@ -184,26 +185,25 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-model.add(Lambda(lambda x: x / 127.5 - 1., \
-				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((50, 10), (0, 0))))						#Crop
+resize_rows, resize_cols = int(INPUT_ROWS / 2), int(INPUT_COLS / 2)
+model.add(Lambda(lambda x: ktf.image.resize_images(x, (resize_rows, resize_cols)), \
+				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))	#Resize
+model.add(Lambda(lambda x: x / 127.5 - 1.))								#Normalize
+model.add(Cropping2D(cropping=((25, 5), (0, 0))))						#Crop
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(SpatialDropout2D(0.2))										#2D-Dropout
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.5))										#2D-Dropout
-model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.5))										#2D-Dropout
+model.add(SpatialDropout2D(0.2))										#2D-Dropout
+model.add(Conv2D(48, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
+model.add(SpatialDropout2D(0.2))										#2D-Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.5))										#2D-Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#Conv2D
-model.add(SpatialDropout2D(0.5))										#2D-Dropout
-model.add(Flatten())													#Flatten													
-model.add(Dense(100, activation="relu"))								#Fully connected
+model.add(Flatten())													#Flatten
+model.add(Dense(100))													#Fully connected
 model.add(Dropout(0.5))													#Dropout
-model.add(Dense(50, activation="relu"))									#Fully connected
+model.add(Dense(50))													#Fully connected
 model.add(Dropout(0.5))													#Dropout
-model.add(Dense(10, activation="relu"))									#Fully connected
-model.add(Dropout(0.5))													#Dropout
+model.add(Dense(10))													#Fully connected
 model.add(Dense(1))														#Output
 
 #Train
