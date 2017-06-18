@@ -19,12 +19,12 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 1.5
+SIDE_IMAGE_OFFSET = 1.2
 STEERING_CUTOFF = 0.8
 BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 5
+EPOCHS = 3
 
 def print_training(history):
 	file = open(LOG_PATH, 'w')
@@ -63,8 +63,8 @@ def augment_image(image): #Augment images
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 8. * np.random.rand() - 4. #Limit +/- 4%
-	sf_y = 8. * np.random.rand() - 4. #Limit +/- 4%
+	sf_x = 1.2 * np.random.rand() - 6. #Limit +/- 6%
+	sf_y = 1.2 * np.random.rand() - 6. #Limit +/- 6%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -75,15 +75,15 @@ def augment_image(image): #Augment images
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 15. * np.random.rand() - 7.5 #Limit +/- 7.5 degrees
+	angle = 20. * np.random.rand() - 10. #Limit +/- 10 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = int(.08 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .04) #Limit +/- 4%
-	shift_y = int(.08 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .04) #Limit +/- 4%
+	shift_x = int(.12 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .06) #Limit +/- 6%
+	shift_y = int(.12 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .06) #Limit +/- 6%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
