@@ -190,15 +190,15 @@ model.add(Lambda(lambda x: ktf.image.resize_images(x, (resize_rows, resize_cols)
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))
 model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
 model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x3
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x24
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x370x3
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x370x36
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(48, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->8x35x3
+model.add(Conv2D(48, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->8x35x48
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->6x33x3
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x3
-model.add(Flatten())												#Flatten->372x1
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->6x33x64
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x64
+model.add(Flatten())												#Flatten->7936x1
 model.add(Dense(100))												#Fully connected->100x1
 model.add(Dropout(0.5))												#Dropout
 model.add(Dense(50))												#Fully connected->50x1
