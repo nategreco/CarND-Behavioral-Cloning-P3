@@ -13,9 +13,10 @@ from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
 from keras.callbacks import Callback
 from keras.backend import tf as ktf
+from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './my-data/'
+DATA_PATH = './example-data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
@@ -27,7 +28,7 @@ STEERING_CUTOFF = 0.3
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 4
+EPOCHS = 1
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -185,8 +186,10 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-model.add(Lambda(lambda x: x / 127.5 - 1., \
-				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))#Normalize
+resize_rows, resize_cols = INPUT_ROWS, INPUT_COLS
+model.add(Lambda(lambda x: K.tf.image.resize_images(x, (resize_rows, resize_cols)), \
+				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))
+model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
 model.add(Cropping2D(cropping=((50, 10), (0, 0))))					#Crop->100x320x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->48x158x24
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
