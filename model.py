@@ -12,7 +12,6 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
 from keras.callbacks import Callback
-from keras.backend import tf as ktf
 from keras import backend as K
 
 #Training set preparation constants
@@ -21,7 +20,7 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.88
+SIDE_IMAGE_OFFSET = 0.85
 STEERING_CUTOFF = 0.3
 
 #Training constants
@@ -68,8 +67,8 @@ def augment_image(image):	#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = .08 * np.random.rand() - 4. #Limit +/- 4%
-	sf_y = .08 * np.random.rand() - 4. #Limit +/- 4%
+	sf_x = .1 * np.random.rand() - 5. #Limit +/- 5%
+	sf_y = .1 * np.random.rand() - 5. #Limit +/- 5%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -80,15 +79,15 @@ def augment_image(image):	#Augment images to prevent overfitting
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 16. * np.random.rand() - 8. #Limit +/- 8 degrees
+	angle = 18. * np.random.rand() - 9. #Limit +/- 9 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = int(.08 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .04) #Limit +/- 4%
-	shift_y = int(.08 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .04) #Limit +/- 4%
+	shift_x = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
+	shift_y = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .05) #Limit +/- 5%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -138,8 +137,8 @@ def generator(lines, batch_size=32):
 				r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					l_image = augment_image(l_image)
-					r_image = augment_image(r_image)
+				l_image = augment_image(l_image)
+				r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
@@ -154,8 +153,8 @@ def generator(lines, batch_size=32):
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-					l_image = augment_image(l_image)
-					r_image = augment_image(r_image)
+				l_image = augment_image(l_image)
+				r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
@@ -186,20 +185,19 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-resize_rows, resize_cols = int(INPUT_ROWS / 2), int(INPUT_COLS / 2)
-model.add(Lambda(lambda x: K.tf.image.resize_images(x, (resize_rows, resize_cols)), \
-				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))
+model.add(Lambda(lambda x: K.tf.image.resize_images(x, (80, 160)), \
+				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))#Resize 80x160x3
 model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
-model.add(Cropping2D(cropping=((50, 10), (0, 0))))					#Crop->100x320x3
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->48x158x24
+model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x24
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->22x77x36
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x37x36
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(48, (5, 5), strides=(1, 1), activation="relu"))	#Conv2D->9x37x48
+model.add(Conv2D(48, (5, 5), strides=(1, 1), activation="relu"))	#Conv2D->6x33x48
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->7x35x64
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->5x33x64
-model.add(Flatten())												#Flatten->10560x1
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x64
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->2x29x64
+model.add(Flatten())												#Flatten->3712x1
 model.add(Dense(100))												#Fully connected->100x1
 model.add(Dropout(0.5))												#Dropout
 model.add(Dense(50))												#Fully connected->50x1
