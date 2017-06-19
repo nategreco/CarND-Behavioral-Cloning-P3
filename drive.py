@@ -16,6 +16,7 @@ from collections import deque
 from keras.models import load_model
 import h5py
 from keras import __version__ as keras_version
+from keras import backend as K
 
 sio = socketio.Server()
 app = Flask(__name__)
