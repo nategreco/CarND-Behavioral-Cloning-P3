@@ -144,28 +144,27 @@ My final model:
 | Layer         		| Description		        						|
 |:---------------------:|:-------------------------------------------------:|
 | Input         		| 160x320x3 BGR image 								|
-| Resize 		     	| Resized to 80x160x3 								|
 | Lambda 		     	| Image normalized with 0 mean 						|
-| Cropping2D	     	| Outputs 50x160x3 									|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 23x78x24	|
+| Cropping2D	     	| Outputs 100x320x3 								|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 48x158x24	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 10x37x36 	|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 22x77x36 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 2x2 stride, 3x3 filter, valid, outputs 6x33x48 	|
+| Convolution	     	| 2x2 stride, 3x3 filter, valid, outputs 9x37x48 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x31x64 	|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 7x35x64 	|
 | RELU					| 													|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 2x29x64 	|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 5x33x64 	|
 | RELU					| 													|
-| Flatten				| Outputs 3712x1									|
-| Fully connected 		| Outputs 232x1 									|
+| Flatten				| Outputs 10560x1									|
+| Fully connected 		| Outputs 100x1 									|
 | Dropout				| 50% keep probability 								|
-| Fully connected 		| Outputs 58x1 										|
+| Fully connected 		| Outputs 50x1 										|
 | Dropout				| 50% keep probability 								|
-| Fully connected 		| Outputs 29x1 										|
+| Fully connected 		| Outputs 10x1 										|
 | Fully connected 		| Outputs 1 (steering position normalized) 			|
 
 Visual depiction:
