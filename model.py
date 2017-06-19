@@ -186,7 +186,7 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 #Create Model
 #https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 model = Sequential()
-resize_rows, resize_cols = INPUT_ROWS, INPUT_COLS
+resize_rows, resize_cols = int(INPUT_ROWS / 2), int(INPUT_COLS / 2)
 model.add(Lambda(lambda x: K.tf.image.resize_images(x, (resize_rows, resize_cols)), \
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))
 model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
@@ -195,7 +195,7 @@ model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->48x158
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->22x77x36
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
-model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->9x37x48
+model.add(Conv2D(48, (5, 5), strides=(1, 1), activation="relu"))	#Conv2D->9x37x48
 model.add(SpatialDropout2D(0.2))									#2D-Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->7x35x64
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->5x33x64
