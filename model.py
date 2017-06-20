@@ -20,14 +20,14 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.8
+SIDE_IMAGE_OFFSET = 0.65
 STEERING_CUTOFF = 0.3
 
 #Training constants
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 5
+EPOCHS = 4
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -71,8 +71,8 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 12. * np.random.rand() - 6. #Limit +/- 6%
-	sf_y = 12. * np.random.rand() - 6. #Limit +/- 6%
+	sf_x = 10. * np.random.rand() - 5. #Limit +/- 6%
+	sf_y = 10. * np.random.rand() - 5. #Limit +/- 6%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -83,7 +83,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 15. * np.random.rand() - 7.5 #Limit +/- 7.5 degrees
+	angle = 12. * np.random.rand() - 6. #Limit +/- 7.5 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -91,7 +91,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 
 	#Shift
 	shift_x = 0 #int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
-	shift_y = int(.16 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .08) #Limit +/- 8%
+	shift_y = int(.12 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .06) #Limit +/- 6%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -139,36 +139,36 @@ def generator(lines, batch_size=32):
 				l_filename = line[1].split('/')[-1]
 				r_filename = line[2].split('/')[-1]
 				c_image = cv2.imread(current_path + c_filename)
-				#l_image = cv2.imread(current_path + l_filename)
-				#r_image = cv2.imread(current_path + r_filename)
+				l_image = cv2.imread(current_path + l_filename)
+				r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-				#l_image = augment_image(l_image)
-				#r_image = augment_image(r_image)
+				l_image = augment_image(l_image)
+				r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
-				#images.append(l_image)
-				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				#images.append(r_image)
-				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				#l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
-				#r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
+				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
+				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				if abs(float()) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
-				#l_image = augment_image(l_image)
-				#r_image = augment_image(r_image)
+				l_image = augment_image(l_image)
+				r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
-				#images.append(l_image)
-				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				#images.append(r_image)
-				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 
 			#Create numpy arrays
 			X_train = np.array(images)
