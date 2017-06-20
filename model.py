@@ -15,19 +15,19 @@ from keras.callbacks import Callback
 from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './new-data/'
+DATA_PATH = './my-data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.85
+SIDE_IMAGE_OFFSET = 0.8
 STEERING_CUTOFF = 0.3
 
 #Training constants
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 2
+EPOCHS = 4
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -37,7 +37,7 @@ def print_training(history):	#Print loss by batch after training for reference
 	return
 
 
-def prepare_image(image):	# Get image to correct shape for input to first layer
+def prepare_image(image):		#Get image to correct shape for input to first layer
 	#Work with new copy
 	working_image = image.copy()
 
@@ -63,32 +63,31 @@ def prepare_image(image):	# Get image to correct shape for input to first layer
 	
 	return working_image
 
-def augment_image(image):	#Augment images to prevent overfitting
+def augment_image(image):		#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = .1 * np.random.rand() - 5. #Limit +/- 5%
-	sf_y = .1 * np.random.rand() - 5. #Limit +/- 5%
+	sf_x = 12. * np.random.rand() - 6. #Limit +/- 6%
+	sf_y = 12. * np.random.rand() - 6. #Limit +/- 6%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
-							   #fx=(sf_x / 100.) + 1., \
-							   fx=1., \
+							   fx=(sf_x / 100.) + 1., \
 							   fy=(sf_y / 100.) + 1., \
 							   interpolation = cv2.INTER_CUBIC)
 
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 18. * np.random.rand() - 9. #Limit +/- 9 degrees
+	angle = 15. * np.random.rand() - 7.5 #Limit +/- 7.5 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
-	shift_y = int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .05) #Limit +/- 5%
+	shift_x = 0 #int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
+	shift_y = int(.16 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .08) #Limit +/- 8%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
