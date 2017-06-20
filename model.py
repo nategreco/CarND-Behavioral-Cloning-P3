@@ -53,11 +53,15 @@ def prepare_image(image):		#Get image to correct shape for input to first layer
 		working_image = cv2.resize(working_image, (new_width, new_height))
 		
 	#Pad to input shape
+	top_pad = int((INPUT_ROWS - working_image.shape[0]) / 2)
+	bot_pad = INPUT_ROWS - working_image.shape[0] - top_pad
+	left_pad = int((INPUT_COLS - working_image.shape[1]) / 2)
+	right_pad = INPUT_COLS - working_image.shape[1] - left_pad
 	working_image = cv2.copyMakeBorder(working_image, \
-									   int((INPUT_ROWS - working_image.shape[0]) / 2), \
-									   int((INPUT_ROWS - working_image.shape[0]) / 2), \
-									   int((INPUT_COLS - working_image.shape[1]) / 2), \
-									   int((INPUT_COLS - working_image.shape[1]) / 2), \
+									   top_pad, \
+									   bot_pad, \
+									   left_pad, \
+									   right_pad, \
 									   cv2.BORDER_CONSTANT, \
 									   value=0)
 	
@@ -112,11 +116,13 @@ current_path = DATA_PATH + 'IMG/'
 #for line in lines:
 #	c_filename = line[0].split('/')[-1]
 #	c_image = cv2.imread(current_path + c_filename)
+#	print('Original size: ', c_image.shape)
 #	cv2.imshow('Original', c_image)
 #	c_image = augment_image(c_image)
+#	print('Augmented size: ', c_image.shape)
 #	cv2.imshow('Augmented', c_image)
 #	cv2.waitKey(0)
-	
+
 
 #Load training data
 def generator(lines, batch_size=32):
