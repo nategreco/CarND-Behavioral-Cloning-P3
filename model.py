@@ -15,7 +15,7 @@ from keras.callbacks import Callback
 from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './example-data/'
+DATA_PATH = './new-data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
@@ -27,7 +27,7 @@ STEERING_CUTOFF = 0.3
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 1
+EPOCHS = 2
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -72,7 +72,8 @@ def augment_image(image):	#Augment images to prevent overfitting
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
-							   fx=(sf_x / 100.) + 1., \
+							   #fx=(sf_x / 100.) + 1., \
+							   fx=1., \
 							   fy=(sf_y / 100.) + 1., \
 							   interpolation = cv2.INTER_CUBIC)
 
