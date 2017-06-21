@@ -137,40 +137,42 @@ def generator(lines, batch_size=32):
 			images = []
 			measurements = []
 			for line in batch_lines:
+				#Get file paths
 				c_filename = line[0].split('/')[-1]
-				#l_filename = line[1].split('/')[-1]
-				#r_filename = line[2].split('/')[-1]
+				l_filename = line[1].split('/')[-1]
+				r_filename = line[2].split('/')[-1]
+				#Add original data
 				c_image = cv2.imread(current_path + c_filename)
-				#l_image = cv2.imread(current_path + l_filename)
-				#r_image = cv2.imread(current_path + r_filename)
+				l_image = cv2.imread(current_path + l_filename)
+				r_image = cv2.imread(current_path + r_filename)
 				if abs(float()) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
-				#l_image = augment_image(l_image)
-				#r_image = augment_image(r_image)
+				c_image = augment_image(c_image)
+				l_image = augment_image(l_image)
+				r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement = float(line[3])
 				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
-				#images.append(l_image)
-				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				#images.append(r_image)
-				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				#l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
-				#r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
+				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
+				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				if abs(float()) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
-				#l_image = augment_image(l_image)
-				#r_image = augment_image(r_image)
+				c_image = augment_image(c_image)
+				l_image = augment_image(l_image)
+				r_image = augment_image(r_image)
 				images.append(c_image)
 				measurement *= -1.
 				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
-				#images.append(l_image)
-				#measurements.append(measurement + SIDE_IMAGE_OFFSET)
-				#images.append(r_image)
-				#measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				images.append(l_image)
+				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				images.append(r_image)
+				measurements.append(measurement - SIDE_IMAGE_OFFSET)
 
 			#Create numpy arrays
 			X_train = np.array(images)
@@ -196,7 +198,7 @@ model = Sequential()
 model.add(Lambda(lambda x: K.tf.image.resize_images(x, (80, 160)), \
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))#Resize 80x160x3
 model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
-model.add(Cropping2D(cropping=((30, 5), (0, 0))))					#Crop->50x160x3
+model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x24
 model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x37x36
@@ -206,12 +208,13 @@ model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x64
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->2x29x64
 model.add(Flatten())												#Flatten->3712x1
-model.add(Dense(100))												#Fully connected->100x1
 model.add(Dropout(0.5))												#Dropout
-model.add(Dense(50))												#Fully connected->50x1
+model.add(Dense(100, activation="relu"))							#Fully connected->100x1
 model.add(Dropout(0.5))												#Dropout
-model.add(Dense(10))												#Fully connected->10x1
-model.add(Dense(1))													#Output
+model.add(Dense(50, activation="relu"))								#Fully connected->50x1
+model.add(Dropout(0.5))												#Dropout
+model.add(Dense(10, activation="relu"))								#Fully connected->10x1
+model.add(Dense(1), activation="relu"))								#Output
 
 #Train
 history = LossHistory()
