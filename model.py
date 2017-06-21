@@ -15,7 +15,7 @@ from keras.callbacks import Callback
 from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './my-data/'
+DATA_PATH = './data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
@@ -27,7 +27,7 @@ STEERING_CUTOFF = 0.3
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 4
+EPOCHS = 6
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -71,8 +71,8 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 10. * np.random.rand() - 5. #Limit +/- 6%
-	sf_y = 10. * np.random.rand() - 5. #Limit +/- 6%
+	sf_x = 16. * np.random.rand() - 5. #Limit +/- 8%
+	sf_y = 16. * np.random.rand() - 5. #Limit +/- 8%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -83,15 +83,17 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 12. * np.random.rand() - 6. #Limit +/- 7.5 degrees
+	angle = 12. * np.random.rand() - 6. #Limit +/- 6 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = 0 #int(.1 * working_image.shape[1] * np.random.rand() - working_image.shape[1] * .05) #Limit +/- 5%
-	shift_y = int(.12 * working_image.shape[1] * np.random.rand() - working_image.shape[0] * .06) #Limit +/- 6%
+	shift_x = int(.04 * working_image.shape[1] * np.random.rand() - \
+				  working_image.shape[1] * .02) #Limit +/- 2%
+	shift_y = int(.16 * working_image.shape[0] * np.random.rand() - \
+				  working_image.shape[0] * .08) #Limit +/- 8%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -194,13 +196,13 @@ model = Sequential()
 model.add(Lambda(lambda x: K.tf.image.resize_images(x, (80, 160)), \
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)))#Resize 80x160x3
 model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
-model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
+model.add(Cropping2D(cropping=((30, 5), (0, 0))))					#Crop->50x160x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x24
-model.add(SpatialDropout2D(0.2))									#2D-Dropout
+model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x37x36
-model.add(SpatialDropout2D(0.2))									#2D-Dropout
+model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(48, (5, 5), strides=(1, 1), activation="relu"))	#Conv2D->6x33x48
-model.add(SpatialDropout2D(0.2))									#2D-Dropout
+model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x64
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->2x29x64
 model.add(Flatten())												#Flatten->3712x1
