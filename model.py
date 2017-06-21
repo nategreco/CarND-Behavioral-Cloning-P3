@@ -20,14 +20,14 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.5
-STEERING_CUTOFF = 0.1
+SIDE_IMAGE_OFFSET = 0.7
+STEERING_CUTOFF = 0.2
 
 #Training constants
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 4
+EPOCHS = 3
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -197,20 +197,15 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1., \
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((50, 10), (0, 0))))						#100x320x3
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#48x158x24
-model.add(SpatialDropout2D(0.2))										#2D-Dropout
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#22x77x36
-model.add(SpatialDropout2D(0.2))										#2D-Dropout
-model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#9x37x48
-model.add(SpatialDropout2D(0.2))										#2D-Dropout
-model.add(Conv2D(64, (3, 3), activation="relu"))						#7x35x64
-model.add(Conv2D(64, (3, 3), activation="relu"))						#5x33x64
-model.add(Flatten())													#10560x1
+model.add(Cropping2D(cropping=((60, 15), (0, 0))))						#85x320x3
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#41x158x24
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#19x77x36
+model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#8x37x48
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#6x35x64
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#4x33x64
+model.add(Flatten())													#8448x1
 model.add(Dense(100))													#100x1
-model.add(Dropout(0.5))													#Dropout
 model.add(Dense(50))													#50x1
-model.add(Dropout(0.5))													#Dropout
 model.add(Dense(10))													#10x1
 model.add(Dense(1))														#Output
 
