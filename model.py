@@ -15,13 +15,13 @@ from keras.callbacks import Callback
 from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './data/'
+DATA_PATH = './my-data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.65
-STEERING_CUTOFF = 0.3
+SIDE_IMAGE_OFFSET = 0.5
+STEERING_CUTOFF = 0.1
 
 #Training constants
 BATCH_SIZE = 64
@@ -145,8 +145,8 @@ def generator(lines, batch_size=32):
 				c_image = cv2.imread(current_path + c_filename)
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
-				#if abs(float()) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
+				if abs(float()) > STEERING_CUTOFF:
+					c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
@@ -161,8 +161,8 @@ def generator(lines, batch_size=32):
 				c_image = cv2.flip(c_image, 1)
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
-				#if abs(float()) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
+				if abs(float()) > STEERING_CUTOFF:
+					c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
@@ -200,19 +200,15 @@ model.add(Lambda(lambda x: K.tf.image.resize_images(x, (80, 160)), \
 model.add(Lambda(lambda x: x / 127.5 - 1.))							#Normalize
 model.add(Cropping2D(cropping=((25, 5), (0, 0))))					#Crop->50x160x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->23x78x24
-model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))	#Conv2D->10x37x36
-model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(48, (5, 5), strides=(1, 1), activation="relu"))	#Conv2D->6x33x48
 model.add(SpatialDropout2D(0.5))									#2D-Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->4x31x64
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))	#Conv2D->2x29x64
 model.add(Flatten())												#Flatten->3712x1
-model.add(Dropout(0.5))												#Dropout
 model.add(Dense(100, activation="relu"))							#Fully connected->100x1
 model.add(Dropout(0.5))												#Dropout
 model.add(Dense(50, activation="relu"))								#Fully connected->50x1
-model.add(Dropout(0.5))												#Dropout
 model.add(Dense(10, activation="relu"))								#Fully connected->10x1
 model.add(Dense(1, activation="relu"))								#Output
 
