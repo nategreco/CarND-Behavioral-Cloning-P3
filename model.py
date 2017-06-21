@@ -20,14 +20,14 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.7
+SIDE_IMAGE_OFFSET = 0.8
 STEERING_CUTOFF = 0.2
 
 #Training constants
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 3
+EPOCHS = 5
 
 #Helper functions
 def print_training(history):	#Print loss by batch after training for reference
@@ -90,8 +90,9 @@ def augment_image(image):		#Augment images to prevent overfitting
 								   (working_image.shape[1], working_image.shape[0]))
 
 	#Shift
-	shift_x = int(.04 * working_image.shape[1] * np.random.rand() - \
-				  working_image.shape[1] * .02) #Limit +/- 2%
+	shift_x = 0
+	#shift_x = int(.04 * working_image.shape[1] * np.random.rand() - \
+	#			  working_image.shape[1] * .02) #Limit +/- 2%
 	shift_y = int(.16 * working_image.shape[0] * np.random.rand() - \
 				  working_image.shape[0] * .08) #Limit +/- 8%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
@@ -145,8 +146,8 @@ def generator(lines, batch_size=32):
 				c_image = cv2.imread(current_path + c_filename)
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
-				if abs(float()) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
+				#if abs(float()) > STEERING_CUTOFF:
+				c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
@@ -161,8 +162,8 @@ def generator(lines, batch_size=32):
 				c_image = cv2.flip(c_image, 1)
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
-				if abs(float()) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
+				#if abs(float()) > STEERING_CUTOFF:
+				c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
@@ -200,11 +201,14 @@ model.add(Lambda(lambda x: x / 127.5 - 1., \
 model.add(Cropping2D(cropping=((60, 15), (0, 0))))						#85x320x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#41x158x24
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#19x77x36
+model.add(Dropout(0.5))													#Dropout
 model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#8x37x48
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#6x35x64
+model.add(Dropout(0.5))													#Dropout
 model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#4x33x64
 model.add(Flatten())													#8448x1
 model.add(Dense(100))													#100x1
+model.add(Dropout(0.5))													#Dropout
 model.add(Dense(50))													#50x1
 model.add(Dense(10))													#10x1
 model.add(Dense(1))														#Output
