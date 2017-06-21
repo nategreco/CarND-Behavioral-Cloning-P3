@@ -145,7 +145,7 @@ def generator(lines, batch_size=32):
 				c_image = cv2.imread(current_path + c_filename)
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
-				if abs(float()) > STEERING_CUTOFF:
+				#if abs(float()) > STEERING_CUTOFF:
 				c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
@@ -161,7 +161,7 @@ def generator(lines, batch_size=32):
 				c_image = cv2.flip(c_image, 1)
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
-				if abs(float()) > STEERING_CUTOFF:
+				#if abs(float()) > STEERING_CUTOFF:
 				c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
