@@ -4,6 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='2' #Block SSE instruction messages
 import csv
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 import sklearn
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
@@ -15,7 +16,7 @@ from keras.callbacks import Callback
 from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './my-data/'
+DATA_PATH = './data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
@@ -30,6 +31,23 @@ DECAY_RATE = 1.0
 EPOCHS = 5
 
 #Helper functions
+def print_histogram(lines):
+	#For checking of training data - plot histogram
+	steer_pos = []
+	steer_mean = 0
+	for line in lines:
+		#Convert to degrees
+		degrees = 30. * float(line[3])
+		steer_mean += degrees
+		degrees = int(degrees)
+		steer_pos.append(degrees)
+	steer_mean /= len(lines)
+	print('Mean steering: ', steer_mean)
+	#print(steer_pos)
+	plt.hist(steer_pos, bins=range(-30,30))
+	plt.title("Steering positions")
+	plt.show()
+
 def print_training(history):	#Print loss by batch after training for reference
 	file = open(LOG_PATH, 'w')
 	file.write(str(history.losses))
@@ -111,6 +129,10 @@ with open(DATA_PATH + 'driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
+
+#For evaluating data
+#print_histogram(lines)
+#exit()
 
 train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
