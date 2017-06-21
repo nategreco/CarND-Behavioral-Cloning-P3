@@ -214,7 +214,7 @@ model.add(Dropout(0.5))												#Dropout
 model.add(Dense(50, activation="relu"))								#Fully connected->50x1
 model.add(Dropout(0.5))												#Dropout
 model.add(Dense(10, activation="relu"))								#Fully connected->10x1
-model.add(Dense(1), activation="relu"))								#Output
+model.add(Dense(1, activation="relu"))								#Output
 
 #Train
 history = LossHistory()
