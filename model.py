@@ -21,8 +21,8 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.3
-STEERING_CUTOFF = 0.08
+SIDE_IMAGE_OFFSET = 0.25
+STEERING_CUTOFF = 0.06
 ZERO_STEERING_RETAIN = 0.8
 
 #Training constants
@@ -66,16 +66,30 @@ def remove_zeros(lines):		#Removal of certain percentage of near zero samples
 	return lines
 
 def aug_left_steering(c_val):
+	steer_val = 0
 	if c_val > 0:
-		return c_val * 2. + SIDE_IMAGE_OFFSET
+		steer_val = c_val * 2. + SIDE_IMAGE_OFFSET
 	else:
-		return c_val + SIDE_IMAGE_OFFSET
+		steer_val = c_val + SIDE_IMAGE_OFFSET
+	#Limit -1 to 1
+	if steer_val > 1.:
+		steer_val = 1.
+	elif steer_val < -1.:
+		steer_val = -1.
+	return steer_val
 
 def aug_right_steering(c_val):
+	steer_val = 0
 	if c_val < 0:
-		return c_val * 2. - SIDE_IMAGE_OFFSET
+		steer_val = c_val * 2. - SIDE_IMAGE_OFFSET
 	else:
-		return c_val - SIDE_IMAGE_OFFSET
+		steer_val = c_val - SIDE_IMAGE_OFFSET
+	#Limit -1 to 1
+	if steer_val > 1.:
+		steer_val = 1.
+	elif steer_val < -1.:
+		steer_val = -1.
+	return steer_val
 
 def prepare_image(image):		#Get image to correct shape for input to first layer
 	#Work with new copy
