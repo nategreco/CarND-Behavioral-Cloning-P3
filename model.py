@@ -183,8 +183,8 @@ def generator(lines, batch_size=32):
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
 				measurement = float(line[3])
-				#if abs(measurement) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
+				if abs(measurement) > STEERING_CUTOFF:
+					c_image = augment_image(c_image)
 				images.append(c_image)
 				measurements.append(measurement)
 				l_image = augment_image(l_image)
@@ -199,14 +199,12 @@ def generator(lines, batch_size=32):
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				measurement *= -1.
-				#if abs(measurement) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
+				if abs(measurement) > STEERING_CUTOFF:
+					c_image = augment_image(c_image)
 				images.append(c_image)
 				measurements.append(measurement)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
-				images.append(c_image)
-				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
 				images.append(l_image)
 				measurements.append(measurement + SIDE_IMAGE_OFFSET)
