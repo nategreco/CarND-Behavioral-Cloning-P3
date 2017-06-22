@@ -22,7 +22,7 @@ INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
 SIDE_IMAGE_OFFSET = 0.8
-STEERING_CUTOFF = 0.2
+STEERING_CUTOFF = 0.05
 
 #Training constants
 BATCH_SIZE = 64
@@ -169,12 +169,13 @@ def generator(lines, batch_size=32):
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
 				measurement = float(line[3])
+				#Do not train on images with no steering angle
 				if abs(measurement) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
+					images.append(c_image)
+					measurements.append(measurement)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
-				images.append(c_image)
-				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
 				images.append(l_image)
 				measurements.append(measurement + SIDE_IMAGE_OFFSET)
@@ -185,8 +186,11 @@ def generator(lines, batch_size=32):
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				measurement *= -1.
+				#Do not train on images with no steering angle
 				if abs(measurement) > STEERING_CUTOFF:
 					c_image = augment_image(c_image)
+					images.append(c_image)
+					measurements.append(measurement)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
