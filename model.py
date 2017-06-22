@@ -16,7 +16,7 @@ from keras.callbacks import Callback
 from keras import backend as K
 
 #Training set preparation constants
-DATA_PATH = './data/'
+DATA_PATH = './my-data/'
 LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
@@ -168,12 +168,12 @@ def generator(lines, batch_size=32):
 				c_image = cv2.imread(current_path + c_filename)
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
-				#if abs(float()) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
+				measurement = float(line[3])
+				if abs(measurement) > STEERING_CUTOFF:
+					c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
-				measurement = float(line[3])
 				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
 				images.append(l_image)
@@ -184,12 +184,12 @@ def generator(lines, batch_size=32):
 				c_image = cv2.flip(c_image, 1)
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
-				#if abs(float()) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
+				measurement *= -1.
+				if abs(measurement) > STEERING_CUTOFF:
+					c_image = augment_image(c_image)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
-				measurement *= -1.
 				measurements.append(measurement)
 				#Use left and right but add offset to learn recovery
 				images.append(l_image)
