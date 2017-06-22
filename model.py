@@ -22,7 +22,8 @@ INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
 SIDE_IMAGE_OFFSET = 0.8
-STEERING_CUTOFF = 0.05
+STEERING_CUTOFF = 0.1
+ZERO_STEERING_RETAIN = 0.8
 
 #Training constants
 BATCH_SIZE = 64
@@ -43,10 +44,10 @@ def print_histogram(lines):
 		steer_pos.append(degrees)
 	steer_mean /= len(lines)
 	print('Mean steering: ', steer_mean)
-	#print(steer_pos)
 	plt.hist(steer_pos, bins=range(-30,30))
 	plt.title("Steering positions")
 	plt.show()
+	return
 
 def print_training(history):	#Print loss by batch after training for reference
 	file = open(LOG_PATH, 'w')
@@ -54,6 +55,15 @@ def print_training(history):	#Print loss by batch after training for reference
 	file.close
 	return
 
+def remove_zeros(lines):		#Removal of certain percentage of near zero samples
+	i = 0
+	while i < len(lines):
+		if abs(float(lines[i][3])) < STEERING_CUTOFF:
+			#Remove 80% of lines below cutoff
+			if np.random.rand() < ZERO_STEERING_RETAIN:
+				del lines[i]
+		i += 1
+	return lines
 
 def prepare_image(image):		#Get image to correct shape for input to first layer
 	#Work with new copy
@@ -130,10 +140,15 @@ with open(DATA_PATH + 'driving_log.csv') as csvfile:
 	for line in reader:
 		lines.append(line)
 
+#Make training set less zero-centered by removing near-zero steering values
+lines = remove_zeros(lines)
+
 #For evaluating data
 #print_histogram(lines)
 #exit()
 
+#Shuffle and split data
+sklearn.utils.shuffle(lines)
 train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
 #For testing of augmentation
@@ -153,7 +168,6 @@ current_path = DATA_PATH + 'IMG/'
 def generator(lines, batch_size=32):
 	num_samples = len(lines)
 	while True:
-		sklearn.utils.shuffle(lines)
 		for offset in range(0, num_samples, batch_size):
 			batch_lines = lines[offset:offset+batch_size]
 
@@ -169,11 +183,10 @@ def generator(lines, batch_size=32):
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
 				measurement = float(line[3])
-				#Do not train on images with no steering angle
-				if abs(measurement) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
-					images.append(c_image)
-					measurements.append(measurement)
+				#if abs(measurement) > STEERING_CUTOFF:
+				c_image = augment_image(c_image)
+				images.append(c_image)
+				measurements.append(measurement)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				#Use left and right but add offset to learn recovery
@@ -186,11 +199,10 @@ def generator(lines, batch_size=32):
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				measurement *= -1.
-				#Do not train on images with no steering angle
-				if abs(measurement) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
-					images.append(c_image)
-					measurements.append(measurement)
+				#if abs(measurement) > STEERING_CUTOFF:
+				c_image = augment_image(c_image)
+				images.append(c_image)
+				measurements.append(measurement)
 				l_image = augment_image(l_image)
 				r_image = augment_image(r_image)
 				images.append(c_image)
