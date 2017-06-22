@@ -21,7 +21,7 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.6
+SIDE_IMAGE_OFFSET = 0.3
 STEERING_CUTOFF = 0.08
 ZERO_STEERING_RETAIN = 0.8
 
@@ -64,6 +64,18 @@ def remove_zeros(lines):		#Removal of certain percentage of near zero samples
 				del lines[i]
 		i += 1
 	return lines
+
+def aug_left_steering(c_val):
+	if c_val > 0:
+		return c_val * 2. + SIDE_IMAGE_OFFSET
+	else:
+		return c_val + SIDE_IMAGE_OFFSET
+
+def aug_right_steering(c_val):
+	if c_val < 0:
+		return c_val * 2. - SIDE_IMAGE_OFFSET
+	else:
+		return c_val - SIDE_IMAGE_OFFSET
 
 def prepare_image(image):		#Get image to correct shape for input to first layer
 	#Work with new copy
@@ -191,9 +203,9 @@ def generator(lines, batch_size=32):
 				r_image = augment_image(r_image)
 				#Use left and right but add offset to learn recovery
 				images.append(l_image)
-				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				measurements.append(aug_left_steering(measurement))
 				images.append(r_image)
-				measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				measurements.append(aug_right_steering(measurement))
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
@@ -207,9 +219,9 @@ def generator(lines, batch_size=32):
 				r_image = augment_image(r_image)
 				#Use left and right but add offset to learn recovery
 				images.append(l_image)
-				measurements.append(measurement + SIDE_IMAGE_OFFSET)
+				measurements.append(aug_left_steering(measurement))
 				images.append(r_image)
-				measurements.append(measurement - SIDE_IMAGE_OFFSET)
+				measurements.append(aug_right_steering(measurement))
 
 			#Create numpy arrays
 			X_train = np.array(images)
