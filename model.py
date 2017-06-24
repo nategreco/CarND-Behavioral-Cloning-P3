@@ -175,15 +175,15 @@ train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
 #For testing of augmentation
 current_path = DATA_PATH + 'IMG/'
-for line in lines:
-	c_filename = line[0].split('/')[-1]
-	c_image = cv2.imread(current_path + c_filename)
-	print('Original size: ', c_image.shape)
-	cv2.imshow('Original', c_image)
-	c_image = augment_image(c_image)
-	print('Augmented size: ', c_image.shape)
-	cv2.imshow('Augmented', c_image)
-	cv2.waitKey(0)
+#for line in lines:
+#	c_filename = line[0].split('/')[-1]
+#	c_image = cv2.imread(current_path + c_filename)
+#	print('Original size: ', c_image.shape)
+#	cv2.imshow('Original', c_image)
+#	c_image = augment_image(c_image)
+#	print('Augmented size: ', c_image.shape)
+#	cv2.imshow('Augmented', c_image)
+#	cv2.waitKey(0)
 
 
 #Load training data
