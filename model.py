@@ -21,15 +21,15 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.4
-STEERING_CUTOFF = 0.1
-ZERO_STEERING_RETAIN = 0.8
+SIDE_IMAGE_OFFSET = 0.2
+STEERING_CUTOFF = 0.08
+ZERO_STEERING_RETAIN = 0.9
 
 #Training constants
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 5
+EPOCHS = 3
 
 #Helper functions
 def print_histogram(lines):
@@ -66,11 +66,7 @@ def remove_zeros(lines):		#Removal of certain percentage of near zero samples
 	return lines
 
 def aug_left_steering(c_val):
-	steer_val = 0
-	if c_val > 0:
-		steer_val = c_val * 2. + SIDE_IMAGE_OFFSET
-	else:
-		steer_val = c_val + SIDE_IMAGE_OFFSET
+	steer_val = (c_val + SIDE_IMAGE_OFFSET) * 1.7 
 	#Limit -1 to 1
 	if steer_val > 1.:
 		steer_val = 1.
@@ -79,11 +75,7 @@ def aug_left_steering(c_val):
 	return steer_val
 
 def aug_right_steering(c_val):
-	steer_val = 0
-	if c_val < 0:
-		steer_val = c_val * 2. - SIDE_IMAGE_OFFSET
-	else:
-		steer_val = c_val - SIDE_IMAGE_OFFSET
+	steer_val = (c_val - SIDE_IMAGE_OFFSET) * 1.7 
 	#Limit -1 to 1
 	if steer_val > 1.:
 		steer_val = 1.
@@ -125,8 +117,8 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 16. * np.random.rand() - 5. #Limit +/- 8%
-	sf_y = 16. * np.random.rand() - 5. #Limit +/- 8%
+	sf_x = 12. * np.random.rand() - 6. #Limit +/- 6%
+	sf_y = 12. * np.random.rand() - 6. #Limit +/- 6%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -137,7 +129,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 16. * np.random.rand() - 8. #Limit +/- 8 degrees
+	angle = 12. * np.random.rand() - 6. #Limit +/- 6 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -147,8 +139,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	shift_x = 0
 	#shift_x = int(.04 * working_image.shape[1] * np.random.rand() - \
 	#			  working_image.shape[1] * .02) #Limit +/- 2%
-	shift_y = int(.16 * working_image.shape[0] * np.random.rand() - \
-				  working_image.shape[0] * .08) #Limit +/- 8%
+	shift_y = int(.16 * working_image.shape[0] * np.random.rand() - working_image.shape[0] * .08) #Limit +/- 8%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -156,6 +147,11 @@ def augment_image(image):		#Augment images to prevent overfitting
 	
 	#Get back to correct shape
 	working_image = prepare_image(working_image.copy())
+	
+	#Feel the noise
+	temp_image = np.zeros_like(working_image, np.uint8)
+	noise = cv2.randn(temp_image, 0, 100)
+	working_image = working_image + noise
 
 	return working_image
 
@@ -179,15 +175,15 @@ train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
 #For testing of augmentation
 current_path = DATA_PATH + 'IMG/'
-#for line in lines:
-#	c_filename = line[0].split('/')[-1]
-#	c_image = cv2.imread(current_path + c_filename)
-#	print('Original size: ', c_image.shape)
-#	cv2.imshow('Original', c_image)
-#	c_image = augment_image(c_image)
-#	print('Augmented size: ', c_image.shape)
-#	cv2.imshow('Augmented', c_image)
-#	cv2.waitKey(0)
+for line in lines:
+	c_filename = line[0].split('/')[-1]
+	c_image = cv2.imread(current_path + c_filename)
+	print('Original size: ', c_image.shape)
+	cv2.imshow('Original', c_image)
+	c_image = augment_image(c_image)
+	print('Augmented size: ', c_image.shape)
+	cv2.imshow('Augmented', c_image)
+	cv2.waitKey(0)
 
 
 #Load training data
