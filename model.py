@@ -21,7 +21,7 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.2
+SIDE_IMAGE_OFFSET = 0.5
 STEERING_CUTOFF = 0.08
 ZERO_STEERING_RETAIN = 0.9
 
@@ -29,7 +29,7 @@ ZERO_STEERING_RETAIN = 0.9
 BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 3
+EPOCHS = 5
 
 #Helper functions
 def print_histogram(lines):
@@ -66,7 +66,7 @@ def remove_zeros(lines):		#Removal of certain percentage of near zero samples
 	return lines
 
 def aug_left_steering(c_val):
-	steer_val = (c_val + SIDE_IMAGE_OFFSET) * 1.7 
+	steer_val = c_val + SIDE_IMAGE_OFFSET
 	#Limit -1 to 1
 	if steer_val > 1.:
 		steer_val = 1.
@@ -75,7 +75,7 @@ def aug_left_steering(c_val):
 	return steer_val
 
 def aug_right_steering(c_val):
-	steer_val = (c_val - SIDE_IMAGE_OFFSET) * 1.7 
+	steer_val = c_val - SIDE_IMAGE_OFFSET 
 	#Limit -1 to 1
 	if steer_val > 1.:
 		steer_val = 1.
@@ -150,7 +150,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	
 	#Feel the noise
 	temp_image = np.zeros_like(working_image, np.uint8)
-	noise = cv2.randn(temp_image, 0, 100)
+	noise = cv2.randn(temp_image, 0, 70)
 	working_image = working_image + noise
 
 	return working_image
