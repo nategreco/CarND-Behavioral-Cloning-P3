@@ -21,15 +21,15 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.35
-STEERING_CUTOFF = 0.08
-ZERO_STEERING_RETAIN = 0.9
+SIDE_IMAGE_OFFSET = 0.45
+STEERING_CUTOFF = 0.06
+ZERO_STEERING_RETAIN = 0.85
 
 #Training constants
 BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 3
+EPOCHS = 6
 
 #Helper functions
 def print_histogram(lines):
@@ -149,9 +149,9 @@ def augment_image(image):		#Augment images to prevent overfitting
 	working_image = prepare_image(working_image.copy())
 	
 	#Feel the noise
-	#temp_image = np.zeros_like(working_image, np.uint8)
-	#noise = cv2.randn(temp_image, 0, 70)
-	#working_image = working_image + noise
+	temp_image = np.zeros_like(working_image, np.uint8)
+	noise = cv2.randn(temp_image, 0, 15)
+	working_image = working_image + noise
 
 	return working_image
 
@@ -175,15 +175,15 @@ train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
 #For testing of augmentation
 current_path = DATA_PATH + 'IMG/'
-#for line in lines:
-#	c_filename = line[0].split('/')[-1]
-#	c_image = cv2.imread(current_path + c_filename)
-#	print('Original size: ', c_image.shape)
-#	cv2.imshow('Original', c_image)
-#	c_image = augment_image(c_image)
-#	print('Augmented size: ', c_image.shape)
-#	cv2.imshow('Augmented', c_image)
-#	cv2.waitKey(0)
+for line in lines:
+	c_filename = line[0].split('/')[-1]
+	c_image = cv2.imread(current_path + c_filename)
+	print('Original size: ', c_image.shape)
+	cv2.imshow('Original', c_image)
+	c_image = augment_image(c_image)
+	print('Augmented size: ', c_image.shape)
+	cv2.imshow('Augmented', c_image)
+	cv2.waitKey(0)
 
 
 #Load training data
@@ -205,8 +205,8 @@ def generator(lines, batch_size=32):
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
 				measurement = float(line[3])
-				if abs(measurement) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
+				#if abs(measurement) > STEERING_CUTOFF:
+				c_image = augment_image(c_image)
 				images.append(c_image)
 				measurements.append(measurement)
 				l_image = augment_image(l_image)
@@ -221,8 +221,8 @@ def generator(lines, batch_size=32):
 				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				measurement *= -1.
-				if abs(measurement) > STEERING_CUTOFF:
-					c_image = augment_image(c_image)
+				#if abs(measurement) > STEERING_CUTOFF:
+				c_image = augment_image(c_image)
 				images.append(c_image)
 				measurements.append(measurement)
 				l_image = augment_image(l_image)
@@ -256,7 +256,7 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1., \
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((50, 10), (0, 0))))						#100x320x3
+model.add(Cropping2D(cropping=((55, 5), (0, 0))))						#100x320x3
 model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#48x158x24
 model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#22x77x36
 model.add(Dropout(0.5))													#Dropout
