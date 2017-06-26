@@ -137,7 +137,7 @@ Vehicle Point of View:
 
 The final model and training values provided desireable behavior on track 1, and drove relatively well on track 2 although occasional lange changes would happen due to the model following the road width instead of lane markings.  The final touch was implementing smoother steering control by using a moving average of the steering command (drive.py:35-38).  This reduced 'jitter' in the steering and made it more natural and time weighted.
 
-Track 1 video: [track-1.mp4](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/track-1.mp4)
+Track 1 video: [track-1.mp4](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/writeup/track-1.mp4)
 
 
 #### 2. Final Model Architecture
