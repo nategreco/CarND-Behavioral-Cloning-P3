@@ -201,36 +201,30 @@ def generator(lines, batch_size=32):
 				c_filename = line[0].split('/')[-1]
 				l_filename = line[1].split('/')[-1]
 				r_filename = line[2].split('/')[-1]
-				#Add original data
+				#Get original data
 				c_image = cv2.imread(current_path + c_filename)
 				l_image = cv2.imread(current_path + l_filename)
 				r_image = cv2.imread(current_path + r_filename)
 				measurement = float(line[3])
-				#if abs(measurement) > STEERING_CUTOFF:
+				#Augment and add original data
 				c_image = augment_image(c_image)
 				images.append(c_image)
 				measurements.append(measurement)
 				l_image = augment_image(l_image)
-				r_image = augment_image(r_image)
-				#Use left and right but add offset to learn recovery
 				images.append(l_image)
 				measurements.append(aug_left_steering(measurement))
+				r_image = augment_image(r_image)
 				images.append(r_image)
 				measurements.append(aug_right_steering(measurement))
 				#Add flipped data
 				c_image = cv2.flip(c_image, 1)
-				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
-				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				measurement *= -1.
-				#if abs(measurement) > STEERING_CUTOFF:
-				c_image = augment_image(c_image)
 				images.append(c_image)
 				measurements.append(measurement)
-				l_image = augment_image(l_image)
-				r_image = augment_image(r_image)
-				#Use left and right but add offset to learn recovery
+				l_image = cv2.flip(r_image, 1)	#Note flipped left is new right
 				images.append(l_image)
 				measurements.append(aug_left_steering(measurement))
+				r_image = cv2.flip(l_image, 1)	#Note flipped right is new left
 				images.append(r_image)
 				measurements.append(aug_right_steering(measurement))
 
