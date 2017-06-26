@@ -28,6 +28,8 @@ The goals / steps of this project are the following:
 [image10]: ./left.jpg "Left"
 [image11]: ./center.jpg "Center"
 [image12]: ./right.jpg "Right"
+[image13]: ./MyDataHistogram.JPG "OriginalData"
+[image14]: ./MyDataFilteredHistogram.JPG "FilteredData"
 
 ---
 
@@ -71,8 +73,8 @@ Next, image augmentation was implemented on the training and validation sets for
 * Random scaling in both X and Y, +/- 3%
 * Random rotation about image center, +/- 5 degrees
 * Random translation in both X and Y, +/- 3%
-* Random noise throughout the image
 * Preparing of image to bring back to Keras model input shape
+* Random noise throughout the image
 
 Before and after example 1:
 
@@ -97,16 +99,20 @@ The parameter that was found to be most critical in the training was actually th
 I used my own training data for training, which included 3 laps counter-clockwise on track 1, 3 laps clockwise on track 1, and 1 lap clockwise on track 2.  Both the clockwise and counter-clockwise laps helped train prevent a bias in the model towards left versus right steering, similarly to the flipping of the images.  The data from track 2 helped generalize the model to using other road markings and image ques for position indication.  Overall, 17,925 car positions were captured, 3 images of each, and all images were flipped.  This made the total sample of data points 107,550.  Training and validation data was handled as follows:
 
 * Training samples were shuffled
+* Training data was filtered to reduce bias from a zero steering position
 * Center image and left/right images with steering offset were added
 * All images were augmented as described above
 * All 3 images were then flpped and added again, making 6 samples total per position
-* Images were resized in the first layer
-* Images were normalized in the second layer
-* Images were cropped in third layer
+* Images were normalized in the first layer
+* Images were cropped in second layer
 
 See example left/center/right images:
 
 ![Left][image10] ![Center][image11] ![Right][image12]
+
+See histogram of steering positions before/after filtering:
+
+![Before][image13] ![After][image14]
 
 
 ### Model Architecture and Training Strategy
