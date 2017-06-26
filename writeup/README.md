@@ -37,6 +37,7 @@ The goals / steps of this project are the following:
 
 My project includes the following files:
 * [model.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.py) containing the script to create and train the model
+* [networks.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/networks.py) containing various keras models that were tried in this project
 * [drive.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/drive.py) for driving the car in autonomous mode
 * [model.h5](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.h5) containing a trained convolution neural network 
 * [README.md](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/writeup/README.md) the report you are reading now
@@ -51,26 +52,27 @@ python drive.py model.h5
 
 #### 3. Submission code is usable and readable
 
-The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
+The [model.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.py) file contains the code for generating and augmenting training data, however the tested models themselves are contained in the [networks.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/networks.py) module. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
 
 
 ### Model Architecture and Training Strategy
 
 #### 1. An appropriate model architecture has been employed
 
-The initial model was based off of the Nvidia end-to-end model shown [here](https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/), consisting of 5 convolutional layers and 4 fully connected layers with a normalized input and flattening layer inbetween.  The general structure and filter sizes remained the same but strides  and input had to be tweaked.  Input was resized with a Keras lambda layer using the tensorflow backend (model.py:188-190) then normalized with a Keras lambda layer (model.py:191).  Next, cropped with a Keras Cropping2D layer(model.py:192) to remove noise from the image (sky and hood of the car).  All activation functions used were ReLU and the output was a normalized steering position.  The overall model structure can be seen here: [model.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.py):187-207.
+The initial model was based off of the Nvidia end-to-end model shown [here](https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/), consisting of 5 convolutional layers and 4 fully connected layers with a normalized input and flattening layer inbetween.  The general structure and filter sizes remained the same but strides  and input had to be tweaked.  Input was first normalized with a Keras lambda layer.  Next, cropped with a Keras Cropping2D layer to remove noise from the image (sky and hood of the car).  All activation functions used were ReLU and the output was a normalized steering position.  The overall model structure can be seen here: [networks.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/networks.py):39-57.
 
 
 #### 2. Attempts to reduce overfitting in the model
 
-Overfitting in the model was prevented in a number of ways. First, a Keras SpatialDropout2D layer was added between the first three Convolution layers (model.py:194,196,198), and similarily a Keras Dropout layer was added after three of the fully connected layers (model.py:203,205).
+Overfitting in the model was prevented in a number of ways. First, three dropout layers were added between various layers in the model.
 
-Next, image augmentation was implemented on the training and validation sets for images with non-zero steering position.  Augmentation (model.py:65-98) consisted of the following:
+Next, image augmentation was implemented on the training and validation sets for images with non-zero steering position.  Augmentation (model.py:117-157) consisted of the following:
 
-* Random scaling in both X and Y, +/- 3% - (model.py:68-76)
-* Random rotation about image center, +/- 5 degrees - (model.py:78-85)
-* Random translation in both X and Y, +/- 3% - (model.py:87-93)
-* Preparing of image to bring back to Keras model input shape - (model.py:39-63)
+* Random scaling in both X and Y, +/- 3%
+* Random rotation about image center, +/- 5 degrees
+* Random translation in both X and Y, +/- 3%
+* Random noise throughout the image
+* Preparing of image to bring back to Keras model input shape
 
 Before and after example 1:
 
@@ -85,22 +87,22 @@ Also, all images used in the training sets were flipped to prevent the model fro
 
 #### 3. Model parameter tuning
 
-Critical parameters to the model were listed at the top (model.py:16-29) to allow quick tweaking and re-training of the model.  An adam optimizer was used and default training rates worked well with approximately 5 epochs.  After this overfitting could be observed by reaching a limit of the validation loss.  A batch size of 64 was used due to the limit of GPU memory in the AWS instance that was being used.  A batch size of 128 would through an exception for not enough resources.
+Critical parameters to the model were listed at the top (model.py:16-29) to allow quick tweaking and re-training of the model.  An adam optimizer was used and default training rates worked well with approximately 5 epochs.  After this overfitting could be observed by reaching a limit of the validation loss.  A batch size of 128 was used due to the limit of GPU memory in the AWS instance that was being used.  A batch size of 256 would through an exception for not enough resources.
 
-The parameter that was found to be most critical in the training was actually the 'SIDE_IMAGE_OFFSET' (model.py:22).  This is because the left and right images were added to the training set specfically to teach the model recovery, therefore the larger the value, the more agressive the attempt to steer towards the middle, and the lower the value, the more sluggish the steering response to an out of center condtion.
+The parameter that was found to be most critical in the training was actually the 'SIDE_IMAGE_OFFSET'.  This is because the left and right images were added to the training set specfically to teach the model recovery, therefore the larger the value, the more agressive the attempt to steer towards the middle, and the lower the value, the more sluggish the steering response to an out of center condtion.
 
 
 #### 4. Appropriate training data
 
 I used my own training data for training, which included 3 laps counter-clockwise on track 1, 3 laps clockwise on track 1, and 1 lap clockwise on track 2.  Both the clockwise and counter-clockwise laps helped train prevent a bias in the model towards left versus right steering, similarly to the flipping of the images.  The data from track 2 helped generalize the model to using other road markings and image ques for position indication.  Overall, 17,925 car positions were captured, 3 images of each, and all images were flipped.  This made the total sample of data points 107,550.  Training and validation data was handled as follows:
 
-* Training samples were shuffled - (model.py:124)
-* Center image and left/right images with steering offset were added - (model.py:141-148)
-* Images of non-zero steering positions were augmented as described above - (model.py:137-140,153-156)
-* All 3 images were then flpped and added again, making 6 samples total per position - (model.py:149-164)
-* Images were resized in the first layer - (model.py:188-190) 
-* Images were normalized in the second layer - (model.py:191)
-* Images were cropped in third layer - (model.py:192)
+* Training samples were shuffled
+* Center image and left/right images with steering offset were added
+* All images were augmented as described above
+* All 3 images were then flpped and added again, making 6 samples total per position
+* Images were resized in the first layer
+* Images were normalized in the second layer
+* Images were cropped in third layer
 
 See example left/center/right images:
 
@@ -144,27 +146,24 @@ My final model:
 | Layer         		| Description		        						|
 |:---------------------:|:-------------------------------------------------:|
 | Input         		| 160x320x3 BGR image 								|
-| Resize         		| 80x160x3 BGR image 								|
 | Lambda 		     	| Image normalized with 0 mean 						|
-| Cropping2D	     	| Outputs 50x160x3 								|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 23x78x24	|
+| Cropping2D	     	| Outputs 76x320x3 									|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 36x158x24	|
+| RELU					| 													|
+| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 16x77x36 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 2x2 stride, 5x5 filter, valid, outputs 10x37x36 	|
+| Convolution	     	| 2x2 stride, 3x3 filter, valid, outputs 6x37x48 	|
+| RELU					| 													|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x35x64 	|
 | RELU					| 													|
 | SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 2x2 stride, 3x3 filter, valid, outputs 6x33x48 	|
+| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 2x33x64 	|
 | RELU					| 													|
-| SpatialDropout2D 		| 80% keep probability 								|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 4x31x64 	|
-| RELU					| 													|
-| Convolution	     	| 1x1 stride, 3x3 filter, valid, outputs 2x29x64 	|
-| RELU					| 													|
-| Flatten				| Outputs 3712x1									|
+| Flatten				| Outputs 4224x1									|
 | Fully connected 		| Outputs 100x1 									|
 | Dropout				| 50% keep probability 								|
 | Fully connected 		| Outputs 50x1 										|
-| Dropout				| 50% keep probability 								|
 | Fully connected 		| Outputs 10x1 										|
 | Fully connected 		| Outputs 1 (steering position normalized) 			|
 
@@ -174,6 +173,6 @@ Visual depiction:
 
 #### 3. Creation of the Training Set & Training Process
 
-Data sets were handled utilizing a generator function.  This way data was processed during training, reducing memory requirements during training.  Prior to training the data (actually lines of the log file) were split (model.py:108) 80/20 between the train and validation sets.  Then, when first called, the generator function shuffled the data (model.py:125), and from there on out when each batch was called the data was augmented as described above.
+Data sets were handled utilizing a generator function.  This way data was processed during training, reducing memory requirements during training.  Prior to training the data (actually lines of the log file) were split 80/20 between the train and validation sets.  Then, when first called, the generator function shuffled the data, and from there on out when each batch was called the data was augmented as described above.
 
 
