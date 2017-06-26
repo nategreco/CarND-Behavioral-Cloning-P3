@@ -42,6 +42,7 @@ My project includes the following files:
 * [networks.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/networks.py) containing various keras models that were tried in this project
 * [drive.py](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/drive.py) for driving the car in autonomous mode
 * [model.h5](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/model.h5) containing a trained convolution neural network 
+* [track-1.mp4](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/track-1.mp4) video of automated lap of track 1
 * [README.md](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/writeup/README.md) the report you are reading now
 
 
@@ -136,13 +137,7 @@ Vehicle Point of View:
 
 The final model and training values provided desireable behavior on track 1, and drove relatively well on track 2 although occasional lange changes would happen due to the model following the road width instead of lane markings.  The final touch was implementing smoother steering control by using a moving average of the steering command (drive.py:35-38).  This reduced 'jitter' in the steering and made it more natural and time weighted.
 
-Track 1 video:
-
-[![Track 1 video](https://youtu.be/fzEnhFJG6dU/0.jpg)](https://youtu.be/fzEnhFJG6dU)
-
-Track 2 video:
-
-[![Track 2 video](https://youtu.be/fzEnhFJG6dU/0.jpg)](https://youtu.be/fzEnhFJG6dU)
+Track 1 video: [track-1.mp4](https://github.com/nategreco/CarND-Behavioral-Cloning-P3/blob/master/track-1.mp4)
 
 
 #### 2. Final Model Architecture
