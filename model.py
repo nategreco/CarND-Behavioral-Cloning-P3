@@ -14,6 +14,7 @@ from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dropout, SpatialDropout2D
 from keras.callbacks import Callback
 from keras import backend as K
+import networks
 
 #Training set preparation constants
 DATA_PATH = './my-data/'
@@ -251,31 +252,16 @@ class LossHistory(Callback):
 train_generator = generator(train_samples, BATCH_SIZE)
 validation_generator = generator(validation_samples, BATCH_SIZE)
 
-#Create Model
-#https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
-model = Sequential()
-model.add(Lambda(lambda x: x / 127.5 - 1., \
-				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((69, 15), (0, 0))))						#76x320x3
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#36x158x24
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#16x77x36
-model.add(Dropout(0.5))													#Dropout
-model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#6x37x48
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#4x35x64
-model.add(Dropout(0.5))													#Dropout
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#2x33x64
-model.add(Flatten())													#4224x1
-model.add(Dense(100))													#100x1
-model.add(Dropout(0.5))													#Dropout
-model.add(Dense(50))													#50x1
-model.add(Dense(10))													#10x1
-model.add(Dense(1))														#Output
+#model = networks.create_flat_model(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)
+#model = networks.create_lenet_model(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)
+model = networks.create_nvidia_model(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)
+#model = networks.create_resize_model(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS)
 
 #Train
 history = LossHistory()
 model.compile(loss='mse', optimizer='adam')
-#model.optimizer.lr.assign(LEARNING_RATE)
-#model.optimizer.decay.assign(DECAY_RATE)
+model.optimizer.lr.assign(LEARNING_RATE)
+model.optimizer.decay.assign(DECAY_RATE)
 model.fit_generator(train_generator, \
 					steps_per_epoch=np.ceil(6 * len(train_samples) / BATCH_SIZE), \
 					epochs=EPOCHS, \
