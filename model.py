@@ -22,14 +22,14 @@ INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
 SIDE_IMAGE_OFFSET = 0.45
-STEERING_CUTOFF = 0.06
-ZERO_STEERING_RETAIN = 0.85
+STEERING_CUTOFF = 0.07
+ZERO_STEERING_RETAIN = 0.9
 
 #Training constants
 BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 6
+EPOCHS = 7
 
 #Helper functions
 def print_histogram(lines):
@@ -117,8 +117,8 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#References - http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
 
 	#Scale
-	sf_x = 12. * np.random.rand() - 6. #Limit +/- 6%
-	sf_y = 12. * np.random.rand() - 6. #Limit +/- 6%
+	sf_x = 8. * np.random.rand() - 4. #Limit +/- 4%
+	sf_y = 8. * np.random.rand() - 4. #Limit +/- 4%
 	working_image = image.copy()
 	working_image = cv2.resize(image.copy(), \
 							   None, \
@@ -129,7 +129,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	#Rotate and Skew
 	center_x = int(working_image.shape[1] / 2.)
 	center_y = int(working_image.shape[0] / 2.)
-	angle = 12. * np.random.rand() - 6. #Limit +/- 6 degrees
+	angle = 8. * np.random.rand() - 4. #Limit +/- 4 degrees
 	matrix = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -139,7 +139,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	shift_x = 0
 	#shift_x = int(.04 * working_image.shape[1] * np.random.rand() - \
 	#			  working_image.shape[1] * .02) #Limit +/- 2%
-	shift_y = int(.16 * working_image.shape[0] * np.random.rand() - working_image.shape[0] * .08) #Limit +/- 8%
+	shift_y = int(.12 * working_image.shape[0] * np.random.rand() - working_image.shape[0] * .06) #Limit +/- 6%
 	matrix = np.float32([[1, 0, shift_x],[0, 1, shift_y]])
 	working_image = cv2.warpAffine(working_image, \
 								   matrix, \
@@ -150,7 +150,7 @@ def augment_image(image):		#Augment images to prevent overfitting
 	
 	#Feel the noise
 	temp_image = np.zeros_like(working_image, np.uint8)
-	noise = cv2.randn(temp_image, 0, 15)
+	noise = cv2.randn(temp_image, 0, 10)
 	working_image = working_image + noise
 
 	return working_image
@@ -256,15 +256,15 @@ validation_generator = generator(validation_samples, BATCH_SIZE)
 model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1., \
 				 input_shape=(INPUT_ROWS, INPUT_COLS, INPUT_CHANNELS))) #Normalize
-model.add(Cropping2D(cropping=((55, 5), (0, 0))))						#100x320x3
-model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#48x158x24
-model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#22x77x36
+model.add(Cropping2D(cropping=((69, 15), (0, 0))))						#76x320x3
+model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))		#36x158x24
+model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))		#16x77x36
 model.add(Dropout(0.5))													#Dropout
-model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#9x37x48
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#7x35x64
+model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))		#6x37x48
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#4x35x64
 model.add(Dropout(0.5))													#Dropout
-model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#5x33x64
-model.add(Flatten())													#10560x1
+model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu"))		#2x33x64
+model.add(Flatten())													#4224x1
 model.add(Dense(100))													#100x1
 model.add(Dropout(0.5))													#Dropout
 model.add(Dense(50))													#50x1
