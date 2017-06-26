@@ -21,15 +21,15 @@ LOG_PATH = './training.txt'
 INPUT_COLS = 320
 INPUT_ROWS = 160
 INPUT_CHANNELS = 3
-SIDE_IMAGE_OFFSET = 0.45
+SIDE_IMAGE_OFFSET = 0.4
 STEERING_CUTOFF = 0.07
-ZERO_STEERING_RETAIN = 0.9
+ZERO_STEERING_RETAIN = 0.8
 
 #Training constants
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 7
+EPOCHS = 4
 
 #Helper functions
 def print_histogram(lines):
@@ -274,8 +274,8 @@ model.add(Dense(1))														#Output
 #Train
 history = LossHistory()
 model.compile(loss='mse', optimizer='adam')
-model.optimizer.lr.assign(LEARNING_RATE)
-model.optimizer.decay.assign(DECAY_RATE)
+#model.optimizer.lr.assign(LEARNING_RATE)
+#model.optimizer.decay.assign(DECAY_RATE)
 model.fit_generator(train_generator, \
 					steps_per_epoch=np.ceil(6 * len(train_samples) / BATCH_SIZE), \
 					epochs=EPOCHS, \
