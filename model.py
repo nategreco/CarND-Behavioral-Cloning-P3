@@ -26,10 +26,10 @@ STEERING_CUTOFF = 0.07
 ZERO_STEERING_RETAIN = 0.8
 
 #Training constants
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 LEARNING_RATE = 0.001
 DECAY_RATE = 1.0
-EPOCHS = 4
+EPOCHS = 5
 
 #Helper functions
 def print_histogram(lines):
